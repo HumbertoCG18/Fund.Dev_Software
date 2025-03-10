@@ -3,37 +3,46 @@ package src;
 public class App {
     public static void main(String[] args) throws Exception {
 
-        Carro basico        = new Carro("Basico", TipoCombustivel.GASOLINA, 10, 55);
-        Carro esportivo     = new Carro("Esportivo", TipoCombustivel.GASOLINA, 6, 45);
-        Carro utilitario    = new Carro("Utilitario", TipoCombustivel.DISEL, 5, 70);
-        Carro suv           = new Carro("SUV", TipoCombustivel.GASOLINA, 8, 55);
-        Carro suvFlex       = new Carro("SUVFlex", TipoCombustivel.FLEX, 6, 65);
-
-        System.out.println("\nAbastencendo carro basico com gasolina");
-        basico.abastece(TipoCombustivel.GASOLINA, 55);
-        System.out.println(basico);
-        System.out.println("\nViajando com o carro basico");
-        basico.viaja(250);
-        basico.viaja(150);
-        System.out.println(basico);
-
-        System.out.println("\n\n----------------");
-        System.out.println("\nAbastencendo carro esportivo com gasolina");
+        System.out.println("Modelo Esportivo");
+        Carro esportivo = new Carro("Esportivo", TipoCombustivel.GASOLINA, 6, 45);
+        System.out.println("Antes de abastecer: " + esportivo);
         esportivo.abastece(TipoCombustivel.GASOLINA, 45);
-        System.out.println(esportivo);
+        esportivo.viaja(100);
+        System.out.println("Após viagem: " + esportivo);
 
-        System.out.println("\nViajando com o carro esportivo");
-        esportivo.viaja(270);
-        System.out.println(esportivo);
+        System.out.println("\nModelo Utilitario");
+        Carro utilitario = new Carro("Utilitario", TipoCombustivel.DISEL, 5, 70);
+        System.out.println("Antes de abastecer: " + utilitario);
+        utilitario.abastece(TipoCombustivel.DISEL, 70);
+        utilitario.viaja(200);
+        System.out.println("Após viagem: " + utilitario);
 
-        System.out.println(utilitario);
-        System.out.println(suv);
-        System.out.println(suvFlex);
+        System.out.println("\nModelo SUV (Tanque FLEX com motor a gasolina fixo)");
+        Carro suv = new Carro("SUV", TipoCombustivel.GASOLINA, 8, 55);
+        System.out.println("Antes de abastecer: " + suv);
+        suv.abastece(TipoCombustivel.GASOLINA, 55);
+        suv.viaja(120);
+        System.out.println("Após viagem: " + suv);
 
+        System.out.println("\nModelo SUVFlex (Tanque FLEX dinâmico e consumo variável)");
+        Carro suvFlex = new Carro("SUVFlex", TipoCombustivel.FLEX, 8, 6, 65);
+        System.out.println("Antes de abastecer: " + suvFlex);
+        // Abastecendo com gasolina
+        suvFlex.abastece(TipoCombustivel.GASOLINA, 65);
+        suvFlex.viaja(100);
+        System.out.println("Após viagem com gasolina: " + suvFlex);
+        // Abastecendo com álcool agora
+        suvFlex.abastece(TipoCombustivel.ALCOOL, 65);
+        suvFlex.viaja(100);
+        System.out.println("Após viagem com álcool: " + suvFlex);
 
-
-
-
-        
+        System.out.println("\nModelo Econo (Motor com consumo dinâmico)");
+        CarroEcono econo = new CarroEcono("Econo", 55);
+        System.out.println("Antes de abastecer: " + econo);
+        econo.abastece(TipoCombustivel.GASOLINA, 55);
+        econo.viaja(5000);  // 5000 km para alterar a eficiência
+        System.out.println("Após viagem 5000 km: " + econo);
+        econo.viaja(3000);
+        System.out.println("Após viagem 3000 km: " + econo);
     }
 }

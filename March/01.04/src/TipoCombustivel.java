@@ -1,5 +1,5 @@
 package src;
 
 public enum TipoCombustivel {
-    GASOLINA,ALCOOL,FLEX,DISEL;
+    GASOLINA, ALCOOL, FLEX, DISEL;
 }

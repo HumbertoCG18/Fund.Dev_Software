@@ -2,9 +2,9 @@ package src;
 
 public class TanqueCombustivel {
 
-    private TipoCombustivel tipoCombustivel;
-    private int capacidade;
-    private int combustivelDisponivel;
+    protected TipoCombustivel tipoCombustivel;
+    protected int capacidade;
+    protected int combustivelDisponivel;
 
     public TanqueCombustivel(TipoCombustivel tipoCombustivel, int capacidade) {
         this.tipoCombustivel = tipoCombustivel;
@@ -24,12 +24,10 @@ public class TanqueCombustivel {
         return combustivelDisponivel;
     }
 
-    // Retorna false se o tipo de combustivel for incompativel ou se a quantidade
-    // for maior que a capacidade livre
-    public boolean abastece(TipoCombustivel tipoCombustivel, int quantidade) {
-        if (tipoCombustivel != this.tipoCombustivel) {
+    public boolean abastece(TipoCombustivel tipo, int quantidade) {
+        if (tipo != this.tipoCombustivel) {
             if (this.tipoCombustivel == TipoCombustivel.FLEX) {
-                if (!(tipoCombustivel == TipoCombustivel.GASOLINA || tipoCombustivel == TipoCombustivel.ALCOOL)) {
+                if (!(tipo == TipoCombustivel.GASOLINA || tipo == TipoCombustivel.ALCOOL)) {
                     return false;
                 }
             } else {
@@ -58,5 +56,4 @@ public class TanqueCombustivel {
         return "TanqueCombustivel [capacidade=" + capacidade + ", combustivelDisponivel=" + combustivelDisponivel
                 + ", tipoCombustivel=" + tipoCombustivel + "]";
     }
-
 }
