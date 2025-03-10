@@ -26,8 +26,6 @@ public class App {
 
         System.out.println("\nModelo SUVFlex (Tanque FLEX dinâmico e consumo variável)");
         Carro suvFlex = new Carro("SUVFlex", TipoCombustivel.FLEX, 8, 6, 65);
-        System.out.println("Antes de abastecer: " + suvFlex);
-        // Abastecendo com gasolina
         suvFlex.abastece(TipoCombustivel.GASOLINA, 65);
         suvFlex.viaja(100);
         System.out.println("Após viagem com gasolina: " + suvFlex);
