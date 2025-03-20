@@ -1,7 +1,7 @@
 package src;
 
 public class CarroEcono extends Carro {
-
+    
     public CarroEcono(String modelo, int capacidadeTanque) {
         super(modelo, TipoCombustivel.GASOLINA, 20, capacidadeTanque);
         this.motor = new MotorEcono(TipoCombustivel.GASOLINA);

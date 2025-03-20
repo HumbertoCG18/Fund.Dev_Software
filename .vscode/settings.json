@@ -1,6 +1,7 @@
 {
     "java.project.sourcePaths": [
-        "March\\01.04"
+        "March/05",
+        "March/19"
     ],
     "java.project.referencedLibraries": []
 }
