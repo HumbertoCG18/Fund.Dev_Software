@@ -1,2 +1,7 @@
-DROP TABLE livros IF EXISTS;
-CREATE TABLE livros (codigo long,titulo VARCHAR(255),autor VARCHAR(255),ano int,PRIMARY KEY(codigo));
+DROP TABLE IF EXISTS livros;
+CREATE TABLE livros (
+    codigo BIGINT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    autor VARCHAR(255) NOT NULL,
+    ano INT NOT NULL
+);
