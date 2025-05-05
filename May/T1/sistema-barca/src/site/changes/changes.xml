@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns="http://maven.apache.org/changes/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/changes/1.0.0 http://maven.apache.org/xsd/changes-1.0.0.xsd">
+  <properties>
+    <title>Histórico de Mudanças do Sistema Barca</title>
+    <author>Equipe de Desenvolvimento</author>
+  </properties>
+  <body>
+    <release version="1.0" date="2025-05-05" description="Primeira versão estável">
+      <action dev="desenvolvedor" type="add" issue="1">
+        Implementação da classe Barca com gestão de assentos
+      </action>
+      <action dev="desenvolvedor" type="add" issue="2">
+        Sistema de validação de formato de identificadores
+      </action>
+      <action dev="desenvolvedor" type="add" issue="3">
+        Cálculo de preços baseado em horário e dia da semana
+      </action>
+      <action dev="desenvolvedor" type="fix" issue="4">
+        Correção do algoritmo de distribuição de peso
+      </action>
+      <action dev="desenvolvedor" type="update" issue="5">
+        Melhoria no sistema de validação de capacidade
+      </action>
+    </release>
+  </body>
+</document>

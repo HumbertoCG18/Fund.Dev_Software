@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Sistema Barca">
+  <bannerLeft>
+    <name>Sistema Barca</name>
+  </bannerLeft>
+  
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.11.1</version>
+  </skin>
+  
+  <custom>
+    <fluidoSkin>
+      <topBarEnabled>true</topBarEnabled>
+      <sideBarEnabled>true</sideBarEnabled>
+      <gitHub>
+        <projectId>seu-usuario/sistema-barca</projectId>
+        <ribbonOrientation>right</ribbonOrientation>
+        <ribbonColor>black</ribbonColor>
+      </gitHub>
+    </fluidoSkin>
+  </custom>
+  
+  <body>
+    <menu name="Documentação">
+      <item name="Início" href="index.html"/>
+      <item name="Relatório do Projeto" href="relatorio-projeto.html"/>
+      <item name="Dados do Sistema" href="dados-sistema.html"/>
+      <item name="Documentação PDF" href="pdf/relatorio-projeto.pdf" />
+    </menu>
+    
+    <menu name="Relatórios">
+      <item name="Relatório de Testes" href="surefire-report.html"/>
+      <item name="Código Fonte" href="xref/index.html"/>
+      <item name="Código dos Testes" href="xref-test/index.html"/>
+      <item name="Dependências" href="dependencies.html"/>
+      <item name="Mudanças" href="changes-report.html"/>
+    </menu>
+  </body>
+</project>

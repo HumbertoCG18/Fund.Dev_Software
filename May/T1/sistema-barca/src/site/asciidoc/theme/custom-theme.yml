@@ -1,0 +1,14 @@
+font:
+  catalog:
+    Noto Serif:
+      normal: notoserifregular
+      bold: notoserifbold
+      italic: notoserifitalic
+      bold_italic: notoserifbolditalic
+    M+ 1mn:
+      normal: mplus1mnregular
+      bold: mplus1mnbold
+      italic: mplus1mnitalic
+      bold_italic: mplus1mnbolditalic
+  fallbacks:
+    - Noto Serif

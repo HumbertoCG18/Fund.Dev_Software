@@ -9,6 +9,7 @@
   <version>1</version>
 
   <name>sistema-barca</name>
+  <description>Sistema de controle de assentos de uma barca de passageiros</description>
   <url>http://www.example.com</url>
 
   <properties>
@@ -16,6 +17,8 @@
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <junit.jupiter.version>5.10.0</junit.jupiter.version>
+    <asciidoctor.maven.plugin.version>2.2.4</asciidoctor.maven.plugin.version>
+    <asciidoctorj.pdf.version>2.3.9</asciidoctorj.pdf.version>
   </properties>
 
   <dependencies>
@@ -38,6 +41,18 @@
       <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
+    
+    <!-- Logging Dependencies -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.4.11</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -54,11 +69,141 @@
         </configuration>
       </plugin>
       
-      <!-- Maven Surefire Plugin -->
+      <!-- Maven Surefire Plugin com configuração corrigida -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.1.2</version>
+        <configuration>
+          <!-- Mostra saída de teste no console -->
+          <useFile>false</useFile>
+          
+          <!-- Ativa saída mais detalhada -->
+          <trimStackTrace>false</trimStackTrace>
+          
+          <!-- Força a exibição de stacktraces completos -->
+          <printSummary>true</printSummary>
+          
+          <!-- Saída mais detalhada -->
+          <reportFormat>plain</reportFormat>
+          
+          <!-- Mostrar saída de sistema e saída padrão -->
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
+          
+          <!-- Controle de processos para execução de testes -->
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
+          
+          <!-- Configuração para registro detalhado -->
+          <systemPropertyVariables>
+            <org.slf4j.simpleLogger.defaultLogLevel>info</org.slf4j.simpleLogger.defaultLogLevel>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      
+      <!-- Maven JXR Plugin para código fonte cross-referenciado -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>3.3.0</version>
+      </plugin>
+      
+      <!-- Maven Site Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>4.0.0-M9</version>
+        <configuration>
+          <locales>pt_BR</locales>
+          <outputEncoding>UTF-8</outputEncoding>
+          <generateReports>true</generateReports>
+        </configuration>
+        <dependencies>
+          <!-- Suporte a arquivos Markdown -->
+          <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-module-markdown</artifactId>
+            <version>2.0.0-M5</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      
+      <!-- AsciiDoctor Plugin para gerar PDF -->
+      <plugin>
+        <groupId>org.asciidoctor</groupId>
+        <artifactId>asciidoctor-maven-plugin</artifactId>
+        <version>${asciidoctor.maven.plugin.version}</version>
+        <dependencies>
+          <!-- Dependência para PDF -->
+          <dependency>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctorj-pdf</artifactId>
+            <version>${asciidoctorj.pdf.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <sourceDirectory>src/site/asciidoc</sourceDirectory>
+          <outputDirectory>${project.build.directory}/site/pt_BR</outputDirectory>
+          <backend>html5</backend>
+          <attributes>
+            <toc>left</toc>
+            <toclevels>3</toclevels>
+            <sectnums>true</sectnums>
+            <source-highlighter>coderay</source-highlighter>
+          </attributes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>generate-html</id>
+            <phase>site</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <backend>html5</backend>
+              <outputDirectory>${project.build.directory}/site/pt_BR</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-pdf</id>
+            <phase>site</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <backend>pdf</backend>
+              <outputDirectory>${project.build.directory}/site/pt_BR/pdf</outputDirectory>
+              <attributes>
+                <pdf-stylesdir>${basedir}/src/site/asciidoc/theme</pdf-stylesdir>
+                <pdf-style>custom</pdf-style>
+                <icons>font</icons>
+                <pagenums/>
+                <toc/>
+                <idprefix/>
+                <idseparator>-</idseparator>
+              </attributes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- Jetty Plugin para servir o site localmente - Configuração corrigida -->
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>11.0.15</version>
+        <configuration>
+          <!-- Configuração correta para Jetty 11.x -->
+          <webApp>
+            <resourceBase>${project.build.directory}/site</resourceBase>
+            <contextPath>/</contextPath>
+          </webApp>
+          <supportedPackagings>
+            <supportedPackaging>jar</supportedPackaging>
+          </supportedPackagings>
+          <stopKey>STOP</stopKey>
+          <stopPort>9999</stopPort>
+        </configuration>
       </plugin>
     </plugins>
     
@@ -85,14 +230,60 @@
           <version>3.1.1</version>
         </plugin>
         <plugin>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>4.0.0-M9</version>
-        </plugin>
-        <plugin>
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.4.5</version>
         </plugin>
       </plugins>
     </pluginManagement>
   </build>
+  
+  <reporting>
+    <plugins>
+      <!-- Relatório de testes -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>3.1.2</version>
+      </plugin>
+      
+      <!-- Maven JXR Plugin na seção de relatórios -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>3.3.0</version>
+      </plugin>
+      
+      <!-- Plugin para tabelas de dados -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changes-plugin</artifactId>
+        <version>2.12.1</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>changes-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      
+      <!-- Informações do projeto -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>3.4.5</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>index</report>
+              <report>summary</report>
+              <report>dependencies</report>
+              <report>team</report>
+              <report>ci-management</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
