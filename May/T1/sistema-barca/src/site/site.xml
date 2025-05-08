@@ -1,9 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project name="Sistema Barca">
-  <bannerLeft>
-    <name>Sistema Barca</name>
-  </bannerLeft>
-  
   <skin>
     <groupId>org.apache.maven.skins</groupId>
     <artifactId>maven-fluido-skin</artifactId>
@@ -14,28 +9,43 @@
     <fluidoSkin>
       <topBarEnabled>true</topBarEnabled>
       <sideBarEnabled>true</sideBarEnabled>
-      <gitHub>
-        <projectId>seu-usuario/sistema-barca</projectId>
-        <ribbonOrientation>right</ribbonOrientation>
-        <ribbonColor>black</ribbonColor>
-      </gitHub>
+      <navBarStyle>navbar-inverse</navBarStyle>
+      <leftColumnClass>span3</leftColumnClass>
+      <bodyColumnClass>span9</bodyColumnClass>
+      <breadcrumbDivider>»</breadcrumbDivider>
+      <copyrightClass>pull-right</copyrightClass>
+      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
     </fluidoSkin>
   </custom>
   
+  <bannerLeft>
+    <name>Sistema Barca</name>
+    <src>images/logo-barca.png</src>
+    <href>index.html</href>
+  </bannerLeft>
+  
+  <version position="right"/>
+  <publishDate position="right"/>
+  
+  <poweredBy>
+    <logo name="Maven" href="https://maven.apache.org/"
+          img="https://maven.apache.org/images/logos/maven-feather.png"/>
+  </poweredBy>
+
   <body>
-    <menu name="Documentação">
-      <item name="Início" href="index.html"/>
-      <item name="Relatório do Projeto" href="relatorio-projeto.html"/>
-      <item name="Dados do Sistema" href="dados-sistema.html"/>
-      <item name="Documentação PDF" href="pdf/relatorio-projeto.pdf" />
+    <menu name="Sistema Barca">
+      <item name="Visão Geral" href="index.html" />
+      <item name="Dados do Sistema" href="dados-sistema.html" />
+      <item name="Relatório do Projeto" href="relatorio-projeto.html" />
+      <item name="PDF do Relatório" href="pdf/relatorio-projeto.pdf" />
     </menu>
     
-    <menu name="Relatórios">
-      <item name="Relatório de Testes" href="surefire-report.html"/>
-      <item name="Código Fonte" href="xref/index.html"/>
-      <item name="Código dos Testes" href="xref-test/index.html"/>
-      <item name="Dependências" href="dependencies.html"/>
-      <item name="Mudanças" href="changes-report.html"/>
+    <menu name="Documentação">
+      <item name="Javadoc" href="apidocs/index.html" />
+      <item name="Relatório de Testes" href="surefire-report.html" />
+      <item name="Changelog" href="changes-report.html" />
     </menu>
+    
+    <menu ref="reports" />
   </body>
 </project>
