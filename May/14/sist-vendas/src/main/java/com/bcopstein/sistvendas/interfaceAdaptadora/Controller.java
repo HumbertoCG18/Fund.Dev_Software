@@ -60,7 +60,6 @@ public class Controller {
         return criaOrcamento.run(itens);
     }
     
-
     @GetMapping("efetivaOrcamento/{id}")
     @CrossOrigin(origins = "*")
     public OrcamentoDTO efetivaOrcamento(@PathVariable(value = "id") long idOrcamento) {

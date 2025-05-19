@@ -12,6 +12,7 @@
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
+            background-color: #27ae60;
         }
 
         h1 {
@@ -21,7 +22,7 @@
         }
 
         .card {
-            border: 1px solid #ddd;
+            border: 1px solid #949393;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 25px;
@@ -32,7 +33,7 @@
         h2 {
             margin-top: 0;
             color: #3498db;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #4c1a1a;
             padding-bottom: 10px;
         }
 
@@ -83,12 +84,14 @@
         select {
             padding: 8px;
             margin: 5px 5px 5px 0;
-            border: 1px solid #ddd;
+            border: 1px solid;
+            border-color: #000000;
             border-radius: 4px;
         }
 
         select {
             min-width: 250px;
+            border-color: #000000;
         }
 
         input[type="number"] {
@@ -131,6 +134,8 @@
             border-radius: 5px;
             padding: 10px;
             background-color: #f9f9f9;
+            border: 1px solid #000000;
+
         }
 
         .product-card p {
@@ -154,7 +159,7 @@
 
     <div class="card">
         <h2>Produtos Disponíveis</h2>
-        <button onclick="getProdutos()">Listar Produtos</button>
+        <button onclick="getProdutos()">Listar Produtos em JSON</button>
         <div id="produtosContainer" class="product-list"></div>
         <div id="produtosResult" class="result" style="display: none;"></div>
     </div>
