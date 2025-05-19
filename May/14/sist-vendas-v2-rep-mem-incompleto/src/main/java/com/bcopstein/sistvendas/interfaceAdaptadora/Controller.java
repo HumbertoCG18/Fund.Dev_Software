@@ -37,12 +37,6 @@ public class Controller {
         this.ultimosOrcamentosEfetivados = ultimosOrcamentosEfetivados;
     }
 
-    @GetMapping("")
-    @CrossOrigin(origins = "*")
-    public String welcomeMessage(){
-        return("Bem vindo as lojas ACME");
-    }
-
     @GetMapping("produtosDisponiveis")
     @CrossOrigin(origins = "*")
     public List<ProdutoDTO> produtosDisponiveis(){
