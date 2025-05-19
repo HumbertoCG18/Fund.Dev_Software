@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lojas ACME - Sistema de Vendas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-color: #fff;
+        }
+        h2 {
+            margin-top: 0;
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 0;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button.remove {
+            background-color: #e74c3c;
+        }
+        button.remove:hover {
+            background-color: #c0392b;
+        }
+        button.add {
+            background-color: #2ecc71;
+        }
+        button.add:hover {
+            background-color: #27ae60;
+        }
+        .result {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            overflow: auto;
+            max-height: 300px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px 5px 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        select {
+            min-width: 200px;
+        }
+        .item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .item button {
+            margin-left: 5px;
+        }
+        .actions {
+            margin-top: 15px;
+        }
+        .loading {
+            color: #3498db;
+            font-style: italic;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lojas ACME - Sistema de Vendas</h1>
+    
+    <div class="card">
+        <h2>Produtos Disponíveis</h2>
+        <button onclick="getProdutos()">Listar Produtos</button>
+        <div id="produtosResult" class="result"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Criar Orçamento</h2>
+        <p>Adicione produtos ao orçamento:</p>
+        <div id="itensOrcamento">
+            <div class="item">
+                <select class="prodId">
+                    <option value="">Selecione um produto</option>
+                </select>
+                <input type="number" placeholder="Quantidade" class="prodQtd" min="1" value="1">
+                <button class="add" onclick="adicionarItem(this)">+</button>
+            </div>
+        </div>
+        <div class="actions">
+            <button onclick="criarOrcamento()">Criar Orçamento</button>
+        </div>
+        <div id="orcamentoResult" class="result"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Efetivar Orçamento</h2>
+        <select id="orcamentoId">
+            <option value="">Selecione um orçamento</option>
+        </select>
+        <button onclick="efetivarOrcamento()">Efetivar</button>
+        <div id="efetivarResult" class="result"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Últimos Orçamentos Efetivados</h2>
+        <input type="number" id="numOrcamentos" placeholder="Quantidade" value="5" min="1">
+        <button onclick="getUltimosOrcamentos()">Buscar</button>
+        <div id="ultimosResult" class="result"></div>
+    </div>
+
+    <script>
+        // Variáveis globais para armazenar dados do sistema
+        let produtos = [];
+        let orcamentos = [];
+
+        // Carrega produtos ao iniciar a página
+        window.onload = async function() {
+            await carregarProdutos();
+            await carregarOrcamentos();
+        };
+
+        // Função para carregar a lista de produtos
+        async function carregarProdutos() {
+            try {
+                const response = await fetch('/produtosDisponiveis');
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                produtos = await response.json();
+                atualizarSeletoresProdutos();
+            } catch (error) {
+                console.error('Erro ao carregar produtos:', error);
+            }
+        }
+
+        // Função para carregar a lista de orçamentos
+        async function carregarOrcamentos() {
+            try {
+                // Vamos obter um número grande para ter todos os orçamentos
+                const response = await fetch('/orcamentosEfetivados?n=100');
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                const orcamentosEfetivados = await response.json();
+
+                // Combinamos com todos os orçamentos
+                const todosOrcamentos = [];
+                // Adicionar orçamentos efetivados à lista (aqui se tivéssemos um endpoint para todos os orçamentos seria melhor)
+                orcamentosEfetivados.forEach(orc => {
+                    todosOrcamentos.push(orc);
+                });
+                
+                orcamentos = todosOrcamentos;
+                atualizarSeletorOrcamentos();
+            } catch (error) {
+                console.error('Erro ao carregar orçamentos:', error);
+            }
+        }
+
+        // Atualiza todos os seletores de produtos na página
+        function atualizarSeletoresProdutos() {
+            const seletores = document.querySelectorAll('select.prodId');
+            
+            seletores.forEach(selector => {
+                const valorAtual = selector.value;
+                selector.innerHTML = '<option value="">Selecione um produto</option>';
+                
+                produtos.forEach(produto => {
+                    const option = document.createElement('option');
+                    option.value = produto.id;
+                    option.textContent = `${produto.id} - ${produto.descricao} (R$ ${produto.precoUnitario.toFixed(2)})`;
+                    selector.appendChild(option);
+                });
+                
+                if (valorAtual) {
+                    selector.value = valorAtual;
+                }
+            });
+        }
+
+        // Atualiza o seletor de orçamentos
+        function atualizarSeletorOrcamentos() {
+            const selector = document.getElementById('orcamentoId');
+            const valorAtual = selector.value;
+            
+            selector.innerHTML = '<option value="">Selecione um orçamento</option>';
+            
+            orcamentos.forEach(orc => {
+                const option = document.createElement('option');
+                option.value = orc.id;
+                option.textContent = `Orçamento #${orc.id} - R$ ${orc.custoConsumidor.toFixed(2)} ${orc.efetivado ? '(Efetivado)' : ''}`;
+                selector.appendChild(option);
+            });
+            
+            if (valorAtual) {
+                selector.value = valorAtual;
+            }
+        }
+
+        // Função para formatar JSON para exibição
+        function formatJSON(data) {
+            return JSON.stringify(data, null, 2);
+        }
+
+        // Função para exibir o resultado na página
+        function displayResult(elementId, data, tipo = 'normal') {
+            const element = document.getElementById(elementId);
+            
+            // Remover classes existentes
+            element.classList.remove('loading', 'error');
+            
+            if (tipo === 'loading') {
+                element.classList.add('loading');
+            } else if (tipo === 'error') {
+                element.classList.add('error');
+            }
+            
+            if (typeof data === 'object') {
+                element.innerHTML = formatJSON(data);
+            } else {
+                element.innerHTML = data;
+            }
+        }
+
+        // Buscar produtos disponíveis
+        async function getProdutos() {
+            try {
+                displayResult('produtosResult', 'Carregando...', 'loading');
+                const response = await fetch('/produtosDisponiveis');
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                produtos = data;
+                atualizarSeletoresProdutos();
+                displayResult('produtosResult', data);
+            } catch (error) {
+                displayResult('produtosResult', 'Erro: ' + error.message, 'error');
+            }
+        }
+
+        // Adicionar um item ao orçamento
+        function adicionarItem(btn) {
+            const itemDiv = btn.parentElement;
+            const clone = itemDiv.cloneNode(true);
+            const selects = clone.querySelectorAll('select');
+            
+            // Garantir que os valores dos selects no clone permaneçam
+            selects.forEach(select => {
+                select.value = '';
+            });
+            
+            document.getElementById('itensOrcamento').appendChild(clone);
+            
+            // Atualizar o clone com as opções de produto
+            atualizarSeletoresProdutos();
+            
+            // Mudar o botão + para - no item original
+            btn.textContent = '-';
+            btn.classList.remove('add');
+            btn.classList.add('remove');
+            btn.onclick = function() { this.parentElement.remove(); };
+        }
+
+        // Criar orçamento
+        async function criarOrcamento() {
+            try {
+                const itens = [];
+                const itemDivs = document.querySelectorAll('.item');
+                
+                itemDivs.forEach(div => {
+                    const prodId = div.querySelector('.prodId').value;
+                    const prodQtd = div.querySelector('.prodQtd').value;
+                    
+                    if (prodId && prodQtd) {
+                        itens.push({
+                            produtoId: parseInt(prodId),
+                            quantidade: parseInt(prodQtd)
+                        });
+                    }
+                });
+                
+                if (itens.length === 0) {
+                    displayResult('orcamentoResult', 'Adicione pelo menos um item ao orçamento.', 'error');
+                    return;
+                }
+                
+                displayResult('orcamentoResult', 'Criando orçamento...', 'loading');
+                
+                const response = await fetch('/novoOrcamento', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(itens)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                displayResult('orcamentoResult', data);
+                
+                // Atualizar a lista de orçamentos e o seletor
+                orcamentos.push(data);
+                atualizarSeletorOrcamentos();
+            } catch (error) {
+                displayResult('orcamentoResult', 'Erro: ' + error.message, 'error');
+            }
+        }
+
+        // Efetivar orçamento
+        async function efetivarOrcamento() {
+            try {
+                const id = document.getElementById('orcamentoId').value;
+                
+                if (!id) {
+                    displayResult('efetivarResult', 'Selecione um orçamento.', 'error');
+                    return;
+                }
+                
+                displayResult('efetivarResult', 'Efetivando orçamento...', 'loading');
+                
+                const response = await fetch(`/efetivaOrcamento/${id}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                displayResult('efetivarResult', data);
+                
+                // Atualizar orçamentos e seletor
+                await carregarOrcamentos();
+            } catch (error) {
+                displayResult('efetivarResult', 'Erro: ' + error.message, 'error');
+            }
+        }
+
+        // Buscar últimos orçamentos efetivados
+        async function getUltimosOrcamentos() {
+            try {
+                const num = document.getElementById('numOrcamentos').value || 5;
+                
+                displayResult('ultimosResult', 'Carregando...', 'loading');
+                
+                const response = await fetch(`/orcamentosEfetivados?n=${num}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                displayResult('ultimosResult', data);
+                
+                // Atualizar a lista de orçamentos
+                await carregarOrcamentos();
+            } catch (error) {
+                displayResult('ultimosResult', 'Erro: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

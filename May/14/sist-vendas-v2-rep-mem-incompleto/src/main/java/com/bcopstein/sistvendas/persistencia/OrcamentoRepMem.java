@@ -1,7 +1,9 @@
 package com.bcopstein.sistvendas.persistencia;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -82,5 +84,14 @@ public class OrcamentoRepMem implements IOrcamentoRepositorio{
             throw new IllegalArgumentException("Orcamento não encontrado");
         }
         orcamento.efetiva();
+    }
+    
+    @Override
+    public List<OrcamentoModel> ultimosEfetivados(int n) {
+        return orcamentos.stream()
+            .filter(OrcamentoModel::isEfetivado)
+            .sorted(Comparator.comparing(OrcamentoModel::getId).reversed())
+            .limit(n)
+            .collect(Collectors.toList());
     }
 }

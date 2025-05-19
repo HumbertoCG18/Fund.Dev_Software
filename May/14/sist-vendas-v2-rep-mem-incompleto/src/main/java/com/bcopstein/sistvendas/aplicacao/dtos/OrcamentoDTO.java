@@ -1,7 +1,6 @@
 package com.bcopstein.sistvendas.aplicacao.dtos;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.bcopstein.sistvendas.dominio.modelos.ItemPedidoModel;

@@ -48,14 +48,40 @@ public class ServicoDeVendas {
  
     public OrcamentoModel efetivaOrcamento(long id) {
         // Recupera o orçamento
-    
+        OrcamentoModel orcamento = this.orcamentos.recuperaPorId(id);
+        if (orcamento == null) {
+            return null;
+        }
+        
+        if (orcamento.isEfetivado()) {
+            return orcamento;
+        }
+        
         // Verifica se tem quantidade em estoque para todos os itens
-
+        boolean todosDisponiveis = true;
+        for (var item : orcamento.getItens()) {
+            int quantidadeEmEstoque = estoque.quantidadeEmEstoque(item.getProduto().getId());
+            if (quantidadeEmEstoque < item.getQuantidade()) {
+                todosDisponiveis = false;
+                break;
+            }
+        }
+        
         // Se tem quantidade para todos os itens, da baixa no estoque para todos
-
-        // Marca o orcamento como efetivado
-
+        if (todosDisponiveis) {
+            for (var item : orcamento.getItens()) {
+                estoque.baixaEstoque(item.getProduto().getId(), item.getQuantidade());
+            }
+            
+            // Marca o orcamento como efetivado
+            orcamentos.marcaComoEfetivado(orcamento.getId());
+        }
+        
         // Retorna o orçamento marcado como efetivado ou não conforme disponibilidade do estoque
-        return null;
+        return orcamento;
+    }
+    
+    public List<OrcamentoModel> ultimosOrcamentosEfetivados(int n) {
+        return this.orcamentos.ultimosEfetivados(n);
     }
 }
