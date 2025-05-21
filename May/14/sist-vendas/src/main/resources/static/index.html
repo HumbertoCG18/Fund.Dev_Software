@@ -12,7 +12,7 @@
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
-            background-color: #27ae60;
+            background-color: #f0f0f0;
         }
 
         h1 {
@@ -22,18 +22,18 @@
         }
 
         .card {
-            border: 1px solid #949393;
+            border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 25px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background-color: #fff;
         }
 
         h2 {
             margin-top: 0;
             color: #3498db;
-            border-bottom: 1px solid #4c1a1a;
+            border-bottom: 2px solid #3498db;
             padding-bottom: 10px;
         }
 
@@ -41,19 +41,27 @@
             background-color: #3498db;
             color: white;
             padding: 10px 15px;
-            border: none;
+            border: 1px solid #2980b9;
             border-radius: 4px;
             cursor: pointer;
             margin: 5px 0;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.1s;
+            font-weight: bold;
+            display: inline-block;
+            text-align: center;
         }
 
         button:hover {
             background-color: #2980b9;
         }
 
+        button:active {
+            transform: scale(0.98);
+        }
+
         button.remove {
             background-color: #e74c3c;
+            border-color: #c0392b;
         }
 
         button.remove:hover {
@@ -62,6 +70,7 @@
 
         button.add {
             background-color: #2ecc71;
+            border-color: #27ae60;
         }
 
         button.add:hover {
@@ -69,43 +78,58 @@
         }
 
         .result {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
+            background-color: #e9ecef;
+            border: 1px solid #000000;
             border-radius: 4px;
             padding: 15px;
             margin-top: 15px;
             overflow: auto;
             max-height: 300px;
             white-space: pre-wrap;
-            font-family: monospace;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
         }
 
         input,
         select {
-            padding: 8px;
-            margin: 5px 5px 5px 0;
-            border: 1px solid;
-            border-color: #000000;
+            padding: 10px;
+            margin: 5px 0 10px 0; /* Ajustado para inputs e selects ficarem abaixo dos labels */
+            border: 1px solid #000000;
             border-radius: 4px;
-        }
-
-        select {
-            min-width: 250px;
-            border-color: #000000;
+            box-sizing: border-box;
+            width: 100%; /* Ocupar largura total disponível */
         }
 
         input[type="number"] {
-            width: 80px;
+            width: 120px; /* Largura específica para números, pode ajustar */
         }
+        
+        #formProduto div { margin-bottom: 12px; } /* Espaçamento entre os campos do formulário */
+        #formProduto label {
+            display: block; /* Labels em sua própria linha */
+            margin-bottom: 3px; /* Pequeno espaço abaixo do label */
+            font-weight: bold;
+        }
+
 
         .item {
             margin-bottom: 10px;
             display: flex;
             align-items: center;
+            gap: 10px;
         }
 
-        .item button {
-            margin-left: 5px;
+        .item select.prodId {
+            flex-grow: 1;
+        }
+
+        .item input.prodQtd {
+            width: 70px;
+            flex-shrink: 0;
+        }
+
+        .item button.remove {
+            flex-shrink: 0;
         }
 
         .actions {
@@ -120,11 +144,15 @@
         .error {
             color: #e74c3c;
             font-weight: bold;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #e74c3c;
         }
 
         .product-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
             gap: 15px;
             margin-top: 15px;
         }
@@ -132,25 +160,64 @@
         .product-card {
             border: 1px solid #ddd;
             border-radius: 5px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border: 1px solid #000000;
-
+            padding: 15px;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .product-card p {
-            margin: 5px 0;
+            margin: 8px 0;
         }
 
         .product-id {
             font-weight: bold;
-            color: #3498db;
+            color: #007bff;
         }
 
         .product-price {
-            color: #27ae60;
+            color: #28a745;
             font-weight: bold;
+            font-size: 1.1em;
         }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        #listaOrcamentosParaGerenciar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #listaOrcamentosParaGerenciar li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #listaOrcamentosParaGerenciar li .orc-info {
+            flex-grow: 1;
+            margin-right: 10px;
+            min-width: 200px; 
+        }
+
+        #listaOrcamentosParaGerenciar li .orc-actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+         /* Remover regra CSS vazia .item button {} */
     </style>
 </head>
 
@@ -158,402 +225,390 @@
     <h1>Lojas ACME - Sistema de Vendas</h1>
 
     <div class="card">
+        <h2 id="produtoFormTitulo">Adicionar Novo Produto</h2>
+        <form id="formProduto">
+            <input type="hidden" id="produtoIdForm">
+            <div>
+                <label for="produtoDescricao">Descrição do Produto:</label>
+                <input type="text" id="produtoDescricao" required>
+            </div>
+            <div>
+                <label for="produtoPreco">Preço Unitário (R$):</label>
+                <input type="number" id="produtoPreco" step="0.01" min="0" required>
+            </div>
+            <div id="estoqueInicialDiv">
+                <div>
+                    <label for="produtoEstoqueInicial">Estoque Inicial:</label>
+                    <input type="number" id="produtoEstoqueInicial" min="0" value="10">
+                </div>
+                <div>
+                    <label for="produtoEstoqueMin">Estoque Mínimo:</label>
+                    <input type="number" id="produtoEstoqueMin" min="0" value="5">
+                </div>
+                <div>
+                    <label for="produtoEstoqueMax">Estoque Máximo:</label>
+                    <input type="number" id="produtoEstoqueMax" min="0" value="50">
+                </div>
+            </div>
+            <div class="button-group">
+                <button type="button" onclick="submeterFormularioProduto()">Salvar Produto</button>
+                <button type="button" onclick="limparEPrepararFormularioProduto()">Novo/Limpar</button>
+            </div>
+        </form>
+        <p style="font-size: 0.9em; color: #555;">Para editar, clique em "Editar Produto" na lista abaixo. Os dados serão carregados no formulário.</p>
+        <div id="produtoFormResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="card">
         <h2>Produtos Disponíveis</h2>
-        <button onclick="getProdutos()">Listar Produtos em JSON</button>
+        <div class="button-group">
+            <button onclick="exibirProdutosComoJson()">Listar Produtos (JSON)</button>
+        </div>
         <div id="produtosContainer" class="product-list"></div>
         <div id="produtosResult" class="result" style="display: none;"></div>
     </div>
 
     <div class="card">
-        <h2>Criar Orçamento</h2>
+        <h2>Criar Novo Orçamento</h2>
         <p>Adicione produtos ao orçamento:</p>
         <div id="itensOrcamento">
-            <!-- Os itens serão adicionados dinamicamente aqui -->
+            </div>
+        <div class="button-group">
+            <button class="add" onclick="adicionarLinhaDeItemParaOrcamento()">Adicionar Item</button>
         </div>
-        <button class="add" onclick="adicionarItemVazio()">Adicionar Item</button>
-        <div class="actions">
-            <button onclick="criarOrcamento()">Criar Orçamento</button>
+        <div class="actions button-group">
+            <button onclick="submeterNovoOrcamento()">Criar Orçamento</button>
         </div>
-        <div id="orcamentoResult" class="result"></div>
+        <div id="orcamentoResult" class="result" style="display: none;"></div>
     </div>
 
     <div class="card">
-        <h2>Efetivar Orçamento</h2>
-        <select id="orcamentoId">
-            <option value="">Selecione um orçamento</option>
-        </select>
-        <button onclick="efetivarOrcamento()">Efetivar</button>
-        <div id="efetivarResult" class="result"></div>
+        <h2>Gerenciar Orçamentos Existentes</h2>
+        <div id="listaOrcamentosParaGerenciar">
+            </div>
+        <div id="gerenciarOrcamentoResult" class="result" style="display: none;"></div>
     </div>
 
     <div class="card">
-        <h2>Últimos Orçamentos Efetivados</h2>
-        <input type="number" id="numOrcamentos" placeholder="Quantidade" value="5" min="1">
-        <button onclick="getUltimosOrcamentos()">Buscar</button>
-        <div id="ultimosResult" class="result"></div>
+        <h2>Últimos Orçamentos Efetivados (Relatório)</h2>
+        <div>
+            <label for="numOrcamentos">Quantidade:</label>
+            <input type="number" id="numOrcamentos" placeholder="N" value="5" min="1" style="width:100px;">
+        </div>
+        <div class="button-group">
+            <button onclick="buscarUltimosOrcamentosEfetivados()">Buscar Relatório</button>
+        </div>
+        <div id="ultimosResult" class="result" style="display: none;"></div>
     </div>
 
     <script>
-        // Variáveis globais para armazenar dados do sistema
-        let produtos = [];
-        let orcamentos = [];
+        let produtosDisponiveis = [];
+        let orcamentosCarregados = [];
 
-        // Carrega produtos ao iniciar a página
+        async function handleFetchError(response) {
+            if (!response.ok) {
+                let errorMsg = `Erro ${response.status}: ${response.statusText}`;
+                try {
+                    const errorData = await response.json();
+                    errorMsg = `Erro ${response.status}: ${errorData.message || response.statusText}`;
+                } catch (e) { /* Mantém msg original se JSON falhar */ }
+                throw new Error(errorMsg);
+            }
+            if (response.status === 204) return null; // Para DELETE bem-sucedido
+            return response.json();
+        }
+
         window.onload = async function () {
-            await carregarProdutos();
-            await carregarOrcamentos();
-            // Adicionar o primeiro item vazio
-            adicionarItemVazio();
+            await carregarProdutosDisponiveis();
+            await carregarTodosOrcamentosParaGerenciamento();
+            adicionarLinhaDeItemParaOrcamento();
+            limparEPrepararFormularioProduto();
         };
 
-        // Função para carregar a lista de produtos
-        async function carregarProdutos() {
+        async function carregarProdutosDisponiveis() {
             try {
                 const response = await fetch('/produtosDisponiveis');
-
-                if (!response.ok) {
-                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                }
-
-                produtos = await response.json();
-                console.log("Produtos carregados:", produtos);
-                atualizarSeletoresProdutos();
-                atualizarListaProdutos();
+                produtosDisponiveis = await handleFetchError(response);
+                renderizarProdutosComoCards();
+                atualizarTodosOsSeletoresDeProduto();
             } catch (error) {
                 console.error('Erro ao carregar produtos:', error);
-                displayResult('produtosResult', 'Erro ao carregar produtos: ' + error.message, 'error');
+                exibirResultadoOperacao('produtosResult', 'Falha ao carregar produtos: ' + error.message, 'error');
             }
         }
 
-        // Exibir produtos como cards em vez de JSON
-        function atualizarListaProdutos() {
+        function renderizarProdutosComoCards() {
             const container = document.getElementById('produtosContainer');
             container.innerHTML = '';
-
-            if (produtos.length === 0) {
-                container.innerHTML = '<p>Nenhum produto disponível</p>';
+            if (!produtosDisponiveis || produtosDisponiveis.length === 0) {
+                container.innerHTML = '<p>Nenhum produto disponível no estoque no momento.</p>';
                 return;
             }
-
-            produtos.forEach(produto => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-        <p class="product-id">ID: ${produto.id}</p>
-        <p>${produto.descricao}</p>
-        <p class="product-price">R$ ${(produto.preco || produto.precoUnitario || 0).toFixed(2)}</p>
-    `;
-                container.appendChild(card);
+            produtosDisponiveis.forEach(produto => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'product-card';
+                cardDiv.innerHTML = `
+                    <div>
+                        <p class="product-id">ID: ${produto.id}</p>
+                        <p><strong>${produto.descricao}</strong></p>
+                        <p class="product-price">R$ ${(produto.precoUnitario || 0).toFixed(2)}</p>
+                    </div>
+                    <div class="button-group" style="margin-top: auto;">
+                        <button onclick="prepararFormularioParaEditarProduto(${produto.id})">Editar</button>
+                        <button class="remove" onclick="removerProdutoPeloCard(${produto.id}, '${produto.descricao.replace(/'/g, "\\'")}')">Remover</button>
+                    </div>
+                `;
+                container.appendChild(cardDiv);
             });
         }
 
-        // Função para carregar a lista de orçamentos
-        async function carregarOrcamentos() {
+        async function carregarTodosOrcamentosParaGerenciamento() {
             try {
-                const response = await fetch('/orcamentosEfetivados?n=100');
-
-                if (!response.ok) {
-                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                }
-
-                orcamentos = await response.json();
-                console.log("Orçamentos carregados:", orcamentos);
-                atualizarSeletorOrcamentos();
+                const response = await fetch('/todosOrcamentos');
+                orcamentosCarregados = await handleFetchError(response);
+                renderizarListaDeOrcamentos();
             } catch (error) {
                 console.error('Erro ao carregar orçamentos:', error);
+                exibirResultadoOperacao('gerenciarOrcamentoResult', 'Falha ao carregar lista de orçamentos: ' + error.message, 'error');
             }
         }
 
-        // Atualiza todos os seletores de produtos na página
-        function atualizarSeletoresProdutos() {
+        function atualizarTodosOsSeletoresDeProduto() {
             const seletores = document.querySelectorAll('select.prodId');
-
-            seletores.forEach(selector => {
-                const valorAtual = selector.value;
-                selector.innerHTML = '<option value="">Selecione um produto</option>';
-
-                produtos.forEach(produto => {
-                    const option = document.createElement('option');
-                    option.value = produto.id;
-                    option.textContent = `${produto.id} - ${produto.descricao} (R$ ${(produto.preco || produto.precoUnitario || 0).toFixed(2)})`;
-                    selector.appendChild(option);
-                });
-
-                if (valorAtual && valorAtual !== "0") {
-                    selector.value = valorAtual;
+            seletores.forEach(seletor => {
+                const valorAtual = seletor.value;
+                seletor.innerHTML = '<option value="">Selecione um produto...</option>';
+                if (produtosDisponiveis) {
+                    produtosDisponiveis.forEach(produto => {
+                        const option = document.createElement('option');
+                        option.value = produto.id;
+                        option.textContent = `${produto.id} - ${produto.descricao} (R$ ${(produto.precoUnitario || 0).toFixed(2)})`;
+                        seletor.appendChild(option);
+                    });
                 }
+                if (valorAtual) seletor.value = valorAtual;
             });
         }
 
-        // Atualiza o seletor de orçamentos
-        function atualizarSeletorOrcamentos() {
-            const selector = document.getElementById('orcamentoId');
-            const valorAtual = selector.value;
+        function renderizarListaDeOrcamentos() {
+            const divLista = document.getElementById('listaOrcamentosParaGerenciar');
+            divLista.innerHTML = '';
 
-            selector.innerHTML = '<option value="">Selecione um orçamento</option>';
-
-            if (orcamentos.length === 0) {
+            if (!orcamentosCarregados || orcamentosCarregados.length === 0) {
+                divLista.innerHTML = '<p>Nenhum orçamento encontrado para gerenciar.</p>';
                 return;
             }
+            const ul = document.createElement('ul');
+            orcamentosCarregados.forEach(orc => {
+                const li = document.createElement('li');
+                const status = orc.efetivado ? '<span style="color: green;">(EFETIVADO)</span>' : '<span style="color: orange;">(PENDENTE)</span>';
+                let botoesAcao = '<div class="orc-actions">';
+                if (!orc.efetivado) {
+                    botoesAcao += `<button onclick="efetivarOrcamentoDaLista(${orc.id})">Efetivar</button>`;
+                }
+                botoesAcao += `<button class="remove" onclick="removerOrcamentoDaLista(${orc.id})">Remover</button>`;
+                botoesAcao += '</div>';
 
-            orcamentos.forEach(orc => {
-                const option = document.createElement('option');
-                option.value = orc.id;
-                // Adicionar informação se está efetivado ou não
-                const status = orc.efetivado ? '(Efetivado)' : '(Pendente)';
-                const valor = orc.valorConsumidor || orc.valor || orc.custoConsumidor || 0;
-                option.textContent = `Orçamento #${orc.id} - R$ ${valor.toFixed(2)} ${status}`;
-                selector.appendChild(option);
+                li.innerHTML = `<span class="orc-info"><strong>Orçamento #${orc.id}</strong> - Total: R$ ${(orc.custoConsumidor || 0).toFixed(2)} ${status}</span> ${botoesAcao}`;
+                ul.appendChild(li);
             });
-
-            if (valorAtual) {
-                selector.value = valorAtual;
-            }
+            divLista.appendChild(ul);
         }
 
-        // Função para formatar JSON para exibição
-        function formatJSON(data) {
-            return JSON.stringify(data, null, 2);
-        }
-        // Função para exibir o resultado na página
-        function displayResult(elementId, data, tipo = 'normal') {
-            const element = document.getElementById(elementId);
-            element.style.display = 'block';
+        function formatarComoJson(data) { return JSON.stringify(data, null, 2); }
 
-            // Remover classes existentes
-            element.classList.remove('loading', 'error');
+        function exibirResultadoOperacao(elementId, data, tipo = 'normal') {
+            const el = document.getElementById(elementId);
+            if (!el) { console.error("Elemento de resultado não encontrado:", elementId); return; }
+            el.style.display = 'block';
+            el.classList.remove('loading', 'error');
 
             if (tipo === 'loading') {
-                element.classList.add('loading');
+                el.classList.add('loading');
+                el.innerHTML = typeof data === 'string' ? data : 'Processando...';
             } else if (tipo === 'error') {
-                element.classList.add('error');
-            }
-
-            if (typeof data === 'object') {
-                // Modificar o objeto para mostrar os preços unitários
-                const dadosModificados = JSON.parse(JSON.stringify(data)); // Clonar objeto
-
-                // Processar um orçamento individual
-                if (dadosModificados && !Array.isArray(dadosModificados) && dadosModificados.itens) {
-                    // Extrair preços unitários dos itens
-                    const precosUnitarios = dadosModificados.itens.map(item => {
-                        return (item.produto && item.produto.precoUnitario) ?
-                            item.produto.precoUnitario :
-                            (item.precoUnitario || 0);
-                    });
-
-                    // Sobrescrever custoItens com os preços unitários
-                    dadosModificados.custoItens = precosUnitarios;
-                }
-                // Processar uma array de orçamentos
-                else if (Array.isArray(dadosModificados)) {
-                    dadosModificados.forEach(orcamento => {
-                        if (orcamento.itens) {
-                            // Extrair preços unitários dos itens
-                            const precosUnitarios = orcamento.itens.map(item => {
-                                return (item.produto && item.produto.precoUnitario) ?
-                                    item.produto.precoUnitario :
-                                    (item.precoUnitario || 0);
-                            });
-
-                            // Sobrescrever custoItens com os preços unitários
-                            orcamento.custoItens = precosUnitarios;
-                        }
-                    });
-                }
-
-                element.innerHTML = formatJSON(dadosModificados);
+                el.classList.add('error');
+                el.innerHTML = typeof data === 'string' ? data : 'Ocorreu um erro.';
             } else {
-                element.innerHTML = data;
+                el.innerHTML = (typeof data === 'object' && data !== null) ? formatarComoJson(data) : (data === null ? 'Operação concluída.' : data);
             }
         }
 
-
-        // Buscar produtos disponíveis
-        async function getProdutos() {
+        async function exibirProdutosComoJson() {
             try {
-                displayResult('produtosResult', 'Carregando...', 'loading');
+                exibirResultadoOperacao('produtosResult', 'Buscando produtos...', 'loading');
                 const response = await fetch('/produtosDisponiveis');
-
-                if (!response.ok) {
-                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                produtos = data;
-                atualizarSeletoresProdutos();
-                atualizarListaProdutos();
-                displayResult('produtosResult', data);
+                const dados = await handleFetchError(response);
+                exibirResultadoOperacao('produtosResult', dados);
             } catch (error) {
-                displayResult('produtosResult', 'Erro: ' + error.message, 'error');
+                exibirResultadoOperacao('produtosResult', 'Falha ao buscar produtos: ' + error.message, 'error');
             }
         }
 
-        // Adicionar um item vazio ao orçamento
-        function adicionarItemVazio() {
+        function adicionarLinhaDeItemParaOrcamento() {
             const container = document.getElementById('itensOrcamento');
-            const novoItem = document.createElement('div');
-            novoItem.className = 'item';
-            novoItem.innerHTML = `
-                <select class="prodId">
-                    <option value="">Selecione um produto</option>
-                </select>
-                <input type="number" placeholder="Quantidade" class="prodQtd" min="1" value="1">
-                <button class="remove" onclick="removerItem(this)">-</button>
+            const novaLinha = document.createElement('div');
+            novaLinha.className = 'item';
+            novaLinha.innerHTML = `
+                <select class="prodId"><option value="">Selecione...</option></select>
+                <input type="number" placeholder="Qtd" class="prodQtd" min="1" value="1">
+                <button class="remove" onclick="this.parentElement.remove()">Remover</button>
             `;
-
-            container.appendChild(novoItem);
-            atualizarSeletoresProdutos();
+            container.appendChild(novaLinha);
+            atualizarTodosOsSeletoresDeProduto();
         }
 
-        // Remover um item do orçamento
-        function removerItem(button) {
-            button.parentElement.remove();
-        }
-
-        // Criar orçamento
-        async function criarOrcamento() {
-            try {
-                const itens = [];
-                const itemDivs = document.querySelectorAll('.item');
-
-                itemDivs.forEach(div => {
-                    const prodIdSelect = div.querySelector('.prodId');
-                    const prodQtdInput = div.querySelector('.prodQtd');
-
-                    if (prodIdSelect.value && prodQtdInput.value && prodIdSelect.value !== "0") {
-                        // Importante: use exatamente os nomes de campos esperados pelo DTO
-                        itens.push({
-                            idProduto: parseInt(prodIdSelect.value),
-                            qtdade: parseInt(prodQtdInput.value)
-                        });
-                    }
-                });
-
-                if (itens.length === 0) {
-                    displayResult('orcamentoResult', 'Adicione pelo menos um item ao orçamento.', 'error');
-                    return;
+        async function submeterNovoOrcamento() {
+            const itens = [];
+            document.querySelectorAll('#itensOrcamento .item').forEach(div => {
+                const sel = div.querySelector('.prodId');
+                const qtd = div.querySelector('.prodQtd');
+                if (sel.value && qtd.value && parseInt(qtd.value) > 0) {
+                    itens.push({ idProduto: parseInt(sel.value), qtdade: parseInt(qtd.value) });
                 }
-
-                console.log("Enviando para o servidor:", JSON.stringify(itens));
-                displayResult('orcamentoResult', 'Criando orçamento...', 'loading');
-
+            });
+            if (itens.length === 0) {
+                exibirResultadoOperacao('orcamentoResult', 'Adicione itens válidos ao orçamento.', 'error'); return;
+            }
+            exibirResultadoOperacao('orcamentoResult', 'Criando orçamento...', 'loading');
+            try {
                 const response = await fetch('/novoOrcamento', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(itens)
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(itens)
                 });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Erro ${response.status}: ${errorText}`);
-                }
-
-                const data = await response.json();
-                // Armazenar o último orçamento criado
-                window.ultimoOrcamentoCriado = data;
-                displayResult('orcamentoResult', data);
-
-                // Adicionar o novo orçamento à lista
-                if (!orcamentos.some(o => o.id === data.id)) {
-                    orcamentos.push(data);
-                }
-
-                // Limpar o formulário após criar o orçamento com sucesso
+                const orcCriado = await handleFetchError(response);
+                exibirResultadoOperacao('orcamentoResult', orcCriado);
                 document.getElementById('itensOrcamento').innerHTML = '';
-                adicionarItemVazio();
-
-                // Atualizar o seletor
-                atualizarSeletorOrcamentos();
-
-                // Atualizar a lista completa de orçamentos
-                await carregarOrcamentos();
+                adicionarLinhaDeItemParaOrcamento();
+                await carregarTodosOrcamentosParaGerenciamento();
             } catch (error) {
-                displayResult('orcamentoResult', 'Erro: ' + error.message, 'error');
-                console.error("Erro ao criar orçamento:", error);
-            }
-        }
-        // Função para carregar a lista de orçamentos
-        async function carregarOrcamentos() {
-            try {
-                const response = await fetch('/todosOrcamentos');  // Alterado de '/orcamentosEfetivados?n=100'
-
-                if (!response.ok) {
-                    // Tentativa alternativa se o endpoint não existir
-                    const altResponse = await fetch('/novoOrcamento/todos');
-                    if (!altResponse.ok) {
-                        throw new Error(`Não foi possível carregar os orçamentos`);
-                    }
-                    orcamentos = await altResponse.json();
-                } else {
-                    orcamentos = await response.json();
-                }
-
-                console.log("Orçamentos carregados:", orcamentos);
-                atualizarSeletorOrcamentos();
-            } catch (error) {
-                console.error('Erro ao carregar orçamentos:', error);
-
-                // Atualização manual do seletor com qualquer orçamento recém-criado
-                if (window.ultimoOrcamentoCriado) {
-                    if (!orcamentos.some(o => o.id === window.ultimoOrcamentoCriado.id)) {
-                        orcamentos.push(window.ultimoOrcamentoCriado);
-                        atualizarSeletorOrcamentos();
-                    }
-                }
+                exibirResultadoOperacao('orcamentoResult', 'Erro ao criar orçamento: ' + error.message, 'error');
             }
         }
 
-        // Efetivar orçamento
-        async function efetivarOrcamento() {
-            try {
-                const id = document.getElementById('orcamentoId').value;
+        function limparEPrepararFormularioProduto() {
+            document.getElementById('formProduto').reset();
+            document.getElementById('produtoIdForm').value = '';
+            document.getElementById('estoqueInicialDiv').style.display = 'block';
+            document.getElementById('produtoFormTitulo').textContent = 'Adicionar Novo Produto';
+            document.getElementById('produtoDescricao').focus();
+            const resultDiv = document.getElementById('produtoFormResult');
+            resultDiv.innerHTML = '';
+            resultDiv.style.display = 'none';
+        }
 
-                if (!id) {
-                    displayResult('efetivarResult', 'Selecione um orçamento.', 'error');
-                    return;
-                }
-
-                displayResult('efetivarResult', 'Efetivando orçamento...', 'loading');
-
-                const response = await fetch(`/efetivaOrcamento/${id}`);
-
-                if (!response.ok) {
-                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                displayResult('efetivarResult', data);
-
-                // Atualizar orçamentos e seletor
-                await carregarOrcamentos();
-            } catch (error) {
-                displayResult('efetivarResult', 'Erro: ' + error.message, 'error');
+        function prepararFormularioParaEditarProduto(produtoId) {
+            const produto = produtosDisponiveis.find(p => p.id === produtoId);
+            if (produto) {
+                document.getElementById('produtoFormTitulo').textContent = `Editando Produto ID: ${produto.id}`;
+                document.getElementById('produtoIdForm').value = produto.id;
+                document.getElementById('produtoDescricao').value = produto.descricao;
+                document.getElementById('produtoPreco').value = produto.precoUnitario;
+                document.getElementById('estoqueInicialDiv').style.display = 'none';
+                const resultDiv = document.getElementById('produtoFormResult');
+                resultDiv.innerHTML = '';
+                resultDiv.style.display = 'none';
+                document.getElementById('formProduto').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
-        // Buscar últimos orçamentos efetivados
-        async function getUltimosOrcamentos() {
-            try {
-                const num = document.getElementById('numOrcamentos').value || 5;
+        async function submeterFormularioProduto() {
+            const id = document.getElementById('produtoIdForm').value;
+            const descricao = document.getElementById('produtoDescricao').value.trim();
+            const precoStr = document.getElementById('produtoPreco').value;
 
-                displayResult('ultimosResult', 'Carregando...', 'loading');
+            if (!descricao) { exibirResultadoOperacao('produtoFormResult', 'Descrição é obrigatória.', 'error'); return; }
+            if (!precoStr) { exibirResultadoOperacao('produtoFormResult', 'Preço é obrigatório.', 'error'); return; }
+            const preco = parseFloat(precoStr);
+            if (isNaN(preco) || preco < 0) { exibirResultadoOperacao('produtoFormResult', 'Preço inválido.', 'error'); return; }
 
-                const response = await fetch(`/orcamentosEfetivados?n=${num}`);
+            let url = '/produtos';
+            let method = 'POST';
+            let payload;
 
-                if (!response.ok) {
-                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+            if (id) { 
+                method = 'PUT';
+                url += `/${id}`;
+                payload = { id: parseInt(id), descricao, precoUnitario: preco };
+            } else { 
+                const qtdIni = parseInt(document.getElementById('produtoEstoqueInicial').value);
+                const estMin = parseInt(document.getElementById('produtoEstoqueMin').value);
+                const estMax = parseInt(document.getElementById('produtoEstoqueMax').value);
+                if (isNaN(qtdIni) || qtdIni < 0 || isNaN(estMin) || estMin < 0 || isNaN(estMax) || estMax < estMin) {
+                    exibirResultadoOperacao('produtoFormResult', 'Valores de estoque inválidos.', 'error'); return;
                 }
+                payload = { descricao, precoUnitario: preco, quantidadeInicialEstoque: qtdIni, estoqueMin: estMin, estoqueMax: estMax };
+            }
 
-                const data = await response.json();
-                displayResult('ultimosResult', data);
+            exibirResultadoOperacao('produtoFormResult', 'Salvando produto...', 'loading');
+            try {
+                const response = await fetch(url, {
+                    method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                const salvo = await handleFetchError(response);
+                exibirResultadoOperacao('produtoFormResult', `Produto ${id ? 'atualizado' : 'adicionado'} com sucesso! ${salvo ? `(ID: ${salvo.id})` : ''}`, 'normal');
+                limparEPrepararFormularioProduto();
+                await carregarProdutosDisponiveis();
             } catch (error) {
-                displayResult('ultimosResult', 'Erro: ' + error.message, 'error');
+                exibirResultadoOperacao('produtoFormResult', `Erro ao salvar produto: ${error.message}`, 'error');
+            }
+        }
+
+        async function efetivarOrcamentoDaLista(orcamentoId) {
+            if (!orcamentoId) { exibirResultadoOperacao('gerenciarOrcamentoResult', 'ID inválido.', 'error'); return; }
+            exibirResultadoOperacao('gerenciarOrcamentoResult', `Efetivando orçamento #${orcamentoId}...`, 'loading');
+            try {
+                const response = await fetch(`/efetivaOrcamento/${orcamentoId}`);
+                const orcProcessado = await handleFetchError(response);
+                exibirResultadoOperacao('gerenciarOrcamentoResult', orcProcessado);
+                await carregarTodosOrcamentosParaGerenciamento();
+            } catch (error) {
+                exibirResultadoOperacao('gerenciarOrcamentoResult', `Erro ao efetivar orçamento #${orcamentoId}: ${error.message}`, 'error');
+            }
+        }
+
+        async function removerOrcamentoDaLista(orcamentoId) {
+            if (!orcamentoId) { exibirResultadoOperacao('gerenciarOrcamentoResult', 'ID inválido.', 'error'); return; }
+            if (!confirm(`Remover orçamento #${orcamentoId}? Esta ação não pode ser desfeita.`)) return;
+            
+            exibirResultadoOperacao('gerenciarOrcamentoResult', `Removendo orçamento #${orcamentoId}...`, 'loading');
+            try {
+                const response = await fetch(`/orcamentos/${orcamentoId}`, { method: 'DELETE' });
+                await handleFetchError(response); // Lida com 204 (null) ou erros
+                exibirResultadoOperacao('gerenciarOrcamentoResult', `Orçamento #${orcamentoId} removido.`, 'normal');
+                await carregarTodosOrcamentosParaGerenciamento();
+            } catch (error) {
+                exibirResultadoOperacao('gerenciarOrcamentoResult', `Erro ao remover orçamento #${orcamentoId}: ${error.message}`, 'error');
+            }
+        }
+        
+        async function removerProdutoPeloCard(produtoId, produtoDescricao) {
+            if (!produtoId) { exibirResultadoOperacao('produtosResult', 'ID do produto inválido.', 'error'); return; }
+            if (!confirm(`Remover o produto "${produtoDescricao}" (ID: ${produtoId})?\nOrçamentos pendentes que contêm este produto serão atualizados.`)) return;
+
+            exibirResultadoOperacao('produtosResult', `Removendo produto ID ${produtoId}...`, 'loading');
+            try {
+                const response = await fetch(`/produtos/${produtoId}`, { method: 'DELETE' });
+                await handleFetchError(response); // Lida com 204 (null) ou erros
+                exibirResultadoOperacao('produtosResult', `Produto ID ${produtoId} removido. Orçamentos atualizados.`, 'normal');
+                await carregarProdutosDisponiveis(); 
+                await carregarTodosOrcamentosParaGerenciamento(); 
+            } catch (error) {
+                exibirResultadoOperacao('produtosResult', `Erro ao remover produto ID ${produtoId}: ${error.message}`, 'error');
+            }
+        }
+
+
+        async function buscarUltimosOrcamentosEfetivados() {
+            const n = document.getElementById('numOrcamentos').value || 5;
+            exibirResultadoOperacao('ultimosResult', `Buscando ${n} orçamentos...`, 'loading');
+            try {
+                const response = await fetch(`/orcamentosEfetivados?n=${n}`);
+                const dados = await handleFetchError(response);
+                exibirResultadoOperacao('ultimosResult', dados);
+            } catch (error) {
+                exibirResultadoOperacao('ultimosResult', 'Erro: ' + error.message, 'error');
             }
         }
     </script>
 </body>
-
 </html>
