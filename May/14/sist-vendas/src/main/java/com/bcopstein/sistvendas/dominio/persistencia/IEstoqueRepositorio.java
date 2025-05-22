@@ -5,11 +5,12 @@ import com.bcopstein.sistvendas.dominio.modelos.ProdutoModel;
 import com.bcopstein.sistvendas.dominio.modelos.ItemDeEstoqueModel;
 
 public interface IEstoqueRepositorio {
-    List<ProdutoModel> todosComEstoque();
+    List<ProdutoModel> todosComEstoque(); // Returns products that are listado and quantity > 0
+    List<ItemDeEstoqueModel> todosOsItensDeEstoque(); // Added to get all items for status view
     int quantidadeEmEstoque(long codigoProduto);
     void baixaEstoque(long codProd, int qtdade);
     ItemDeEstoqueModel cadastraItemEstoque(ItemDeEstoqueModel novoItem); 
     ItemDeEstoqueModel consultaItemPorProdutoId(long codigoProduto); 
     void atualizaItemEstoque(ItemDeEstoqueModel itemEditado); 
-    boolean removeItemEstoquePorProdutoId(long produtoId); // Remove item de estoque pelo ID do produto
+    boolean delistarProdutoDeEstoque(long produtoId); // Changed from removeItemEstoquePorProdutoId
 }

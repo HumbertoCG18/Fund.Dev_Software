@@ -17,12 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.bcopstein.sistvendas.aplicacao.casosDeUso.*; // Importa todos os UCs
-import com.bcopstein.sistvendas.aplicacao.dtos.*; // Importa todos os DTOs
+import com.bcopstein.sistvendas.aplicacao.casosDeUso.*; 
+import com.bcopstein.sistvendas.aplicacao.dtos.*; 
 
 @RestController
 public class Controller {
-    private ProdutosDisponiveisUC produtosDisponiveisUC; // Renomeado para clareza
+    private ProdutosDisponiveisUC produtosDisponiveisUC;
+    private TodosProdutosStatusUC todosProdutosStatusUC; // Added
     private CriaOrcamentoUC criaOrcamentoUC;
     private EfetivaOrcamentoUC efetivaOrcamentoUC;
     private UltimosOrcamentosEfetivadosUC ultimosOrcamentosEfetivadosUC;
@@ -30,11 +31,12 @@ public class Controller {
     private AdicionarProdutoUC adicionarProdutoUC;
     private EditarProdutoUC editarProdutoUC;
     private RemoverOrcamentoUC removerOrcamentoUC;
-    private RemoverProdutoUC removerProdutoUC; // Novo UC
+    private DesativarProdutoUC desativarProdutoUC; // Changed from RemoverProdutoUC
 
     @Autowired
     public Controller(
             ProdutosDisponiveisUC produtosDisponiveisUC,
+            TodosProdutosStatusUC todosProdutosStatusUC, // Added
             CriaOrcamentoUC criaOrcamentoUC,
             EfetivaOrcamentoUC efetivaOrcamentoUC,
             UltimosOrcamentosEfetivadosUC ultimosOrcamentosEfetivadosUC,
@@ -42,8 +44,10 @@ public class Controller {
             AdicionarProdutoUC adicionarProdutoUC,
             EditarProdutoUC editarProdutoUC,
             RemoverOrcamentoUC removerOrcamentoUC,
-            RemoverProdutoUC removerProdutoUC) { // Injetar novo UC
+            DesativarProdutoUC desativarProdutoUC // Changed
+            ) {
         this.produtosDisponiveisUC = produtosDisponiveisUC;
+        this.todosProdutosStatusUC = todosProdutosStatusUC; // Added
         this.criaOrcamentoUC = criaOrcamentoUC;
         this.efetivaOrcamentoUC = efetivaOrcamentoUC;
         this.ultimosOrcamentosEfetivadosUC = ultimosOrcamentosEfetivadosUC;
@@ -51,14 +55,14 @@ public class Controller {
         this.adicionarProdutoUC = adicionarProdutoUC;
         this.editarProdutoUC = editarProdutoUC;
         this.removerOrcamentoUC = removerOrcamentoUC;
-        this.removerProdutoUC = removerProdutoUC; // Atribuir
+        this.desativarProdutoUC = desativarProdutoUC; // Changed
     }
 
     @GetMapping("")
     @CrossOrigin(origins = "*")
     public ResponseEntity<Void> welcomeMessage() {
         return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create("/index.html"))
+                .location(URI.create("/welcome.html")) // Changed to welcome.html as per files
                 .build();
     }
 
@@ -71,13 +75,19 @@ public class Controller {
 
     @PostMapping("/novoOrcamento")
     @CrossOrigin(origins = "*")
-    public OrcamentoDTO novoOrcamento(@RequestBody List<ItemPedidoDTO> itens) {
+    // Changed to use NovoOrcamentoRequestDTO
+    public OrcamentoDTO novoOrcamento(@RequestBody NovoOrcamentoRequestDTO request) { 
         try {
-            return criaOrcamentoUC.run(itens);
-        } catch (IllegalArgumentException e) {
+            return criaOrcamentoUC.run(request); // Pass the whole request DTO
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-        } catch (Exception e) {
+        } catch (RuntimeException e) { // Catch specific runtime from UC like "Produto não encontrado"
+             System.err.println("Controller Erro: /novoOrcamento -> " + e.getMessage());
+             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
+         catch (Exception e) {
             System.err.println("Controller Erro: /novoOrcamento -> " + e.getMessage());
+            e.printStackTrace(); // Good for debugging server-side
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao criar orçamento.", e);
         }
     }
@@ -85,12 +95,21 @@ public class Controller {
     @GetMapping("/efetivaOrcamento/{id}")
     @CrossOrigin(origins = "*")
     public OrcamentoDTO efetivaOrcamento(@PathVariable(value = "id") long idOrcamento) {
-        OrcamentoDTO orcamento = efetivaOrcamentoUC.run(idOrcamento);
-        if (orcamento == null) {
-             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Orçamento ID " + idOrcamento + " não encontrado.");
+        try {
+            OrcamentoDTO orcamento = efetivaOrcamentoUC.run(idOrcamento);
+            if (orcamento == null) { // Should mean "not found"
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Orçamento ID " + idOrcamento + " não encontrado.");
+            }
+            // If orcamento.isEfetivado() is false after the call, it means stock was insufficient
+            // The client can check this flag. HTTP 200 is okay, body contains outcome.
+            return orcamento;
+        } catch (IllegalStateException e) { // e.g. orçamento sem itens
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
-        // O DTO já reflete se foi efetivado ou não (devido a falta de estoque, por exemplo)
-        return orcamento;
+         catch (Exception e) {
+            System.err.println("Controller Erro: /efetivaOrcamento/" + idOrcamento + " -> " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao efetivar orçamento.", e);
+        }
     }
 
     @GetMapping("/orcamentosEfetivados")
@@ -118,15 +137,22 @@ public class Controller {
     }
 
     // --- Endpoints de Produto ---
-    @GetMapping("/produtosDisponiveis")
+    @GetMapping("/produtosDisponiveis") // This lists products for adding to budget (listado and stock > 0)
     @CrossOrigin(origins = "*")
-    public List<ProdutoDTO> produtosDisponiveis() {
+    public List<ProdutoDTO> produtosDisponiveis() { // Returns basic ProdutoDTO
         return produtosDisponiveisUC.run();
+    }
+
+    @GetMapping("/todosProdutosStatus") // New endpoint for product management UI
+    @CrossOrigin(origins = "*")
+    public List<ProdutoEstoqueDTO> todosProdutosStatus() { // Returns enhanced ProdutoEstoqueDTO
+        return todosProdutosStatusUC.run();
     }
 
     @PostMapping("/produtos")
     @CrossOrigin(origins = "*")
     public ResponseEntity<ProdutoDTO> adicionarProduto(@RequestBody NovoProdutoRequestDTO novoProdutoDTO) {
+        // Returns basic ProdutoDTO
         try {
             ProdutoDTO produtoAdicionado = adicionarProdutoUC.run(novoProdutoDTO);
             return ResponseEntity.created(URI.create("/produtos/" + produtoAdicionado.getId()))
@@ -142,41 +168,42 @@ public class Controller {
     @PutMapping("/produtos/{id}")
     @CrossOrigin(origins = "*")
     public ResponseEntity<ProdutoDTO> editarProduto(@PathVariable long id, @RequestBody ProdutoDTO produtoDTO) {
+        // Returns basic ProdutoDTO
         try {
-            // Validação básica para garantir que o ID no DTO (se presente) corresponda ao ID do path
-            // ou que o DTO não precise ter o ID se ele já vem do path.
-            // Por simplicidade, o UC usará o ID do path.
             ProdutoDTO produtoEditado = editarProdutoUC.run(id, produtoDTO);
-            if (produtoEditado == null) { // O UC pode retornar null se o produto não for encontrado pelo serviço
+            if (produtoEditado == null) { 
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto ID " + id + " não encontrado.");
             }
             return ResponseEntity.ok(produtoEditado);
         } catch (IllegalArgumentException e) { 
-            // Esta exceção pode vir do serviço (ex: produto não encontrado, dados inválidos)
-            // Mapear para NOT_FOUND ou BAD_REQUEST conforme o contexto da exceção.
-            // Se o serviço lança IllegalArgumentException para "não encontrado", então NOT_FOUND é apropriado.
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+             // Assuming service throws IllegalArgumentException for "not found" or bad data
+            if (e.getMessage() != null && e.getMessage().contains("não encontrado")) {
+                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (Exception e) {
             System.err.println("Controller Erro: /produtos/" + id + " (PUT) -> " + e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao editar produto.", e);
         }
     }
 
-    @DeleteMapping("/produtos/{id}")
+    @DeleteMapping("/produtos/{id}") // This now de-lists the product
     @CrossOrigin(origins = "*")
-    public ResponseEntity<Void> removerProduto(@PathVariable long id) {
+    public ResponseEntity<Void> desativarProduto(@PathVariable long id) {
         try {
-            boolean removido = removerProdutoUC.run(id);
-            if (removido) {
+            boolean desativado = desativarProdutoUC.run(id); // Changed UC
+            if (desativado) {
                 return ResponseEntity.noContent().build(); 
             } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto ID " + id + " não encontrado para remoção ou falha na operação.");
+                 // Could be product not found, or already delisted by some logic.
+                 // Service should return false if product ID itself doesn't exist in produtosRepo for consistency.
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto ID " + id + " não encontrado ou falha ao desativar.");
             }
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) { // Should not happen if ID is just long
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (Exception e) {
             System.err.println("Controller Erro: /produtos/" + id + " (DELETE) -> " + e.getMessage());
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao remover produto.", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao desativar produto.", e);
         }
     }
 }

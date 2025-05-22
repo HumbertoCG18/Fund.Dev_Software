@@ -1,11 +1,12 @@
 package com.bcopstein.sistvendas.dominio.modelos;
 
 public class ItemDeEstoqueModel{
-    private long id; // ID for the stock item itself
+    private long id; 
     private ProdutoModel produto;
     private int quantidade;
     private int estoqueMin;
     private int estoqueMax;
+    private boolean listado = true; // Added for soft delete/listing control
 
     public ItemDeEstoqueModel(long id, ProdutoModel produto, int quantidade, int estoqueMin, int estoqueMax) {
         this.id = id;
@@ -13,13 +14,13 @@ public class ItemDeEstoqueModel{
         this.quantidade = quantidade;
         this.estoqueMin = estoqueMin;
         this.estoqueMax = estoqueMax;
+        this.listado = true; // Default to true
     }
 
     public long getId() {
         return id;
     }
 
-    // Setter for ID - NEEDED BY EstoqueRepMem
     public void setId(long id) {
         this.id = id;
     }
@@ -27,8 +28,6 @@ public class ItemDeEstoqueModel{
     public ProdutoModel getProduto() {
         return produto;
     }
-
-    // No setter for produto, as it's fundamental to the stock item. If product changes, it's a new stock item.
 
     public int getQuantidade() {
         return quantidade;
@@ -54,6 +53,14 @@ public class ItemDeEstoqueModel{
         this.estoqueMax = estoqueMax;
     }
 
+    public boolean isListado() { // Added getter
+        return listado;
+    }
+
+    public void setListado(boolean listado) { // Added setter
+        this.listado = listado;
+    }
+
     @Override
     public String toString() {
         return "ItemDeEstoqueModel[" +
@@ -62,6 +69,7 @@ public class ItemDeEstoqueModel{
                 ", quantidade=" + quantidade +
                 ", estoqueMin=" + estoqueMin +
                 ", estoqueMax=" + estoqueMax +
+                ", listado=" + listado + // Added to toString
                 ']';
     }
 }

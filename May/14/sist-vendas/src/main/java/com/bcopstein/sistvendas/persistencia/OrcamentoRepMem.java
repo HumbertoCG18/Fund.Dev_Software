@@ -34,6 +34,7 @@ public class OrcamentoRepMem implements IOrcamentoRepositorio {
         if(p10 != null) ped1.addItem(new ItemPedidoModel(p10, 2));
         if(p20 != null) ped1.addItem(new ItemPedidoModel(p20, 3));
         orc1.addItensPedido(ped1);
+        orc1.setEstadoCliente("SP"); // Example: Set a default state for old budget
         orc1.recalculaTotais(); // Calcula totais ao criar
         this.cadastra(orc1); 
 
@@ -46,6 +47,7 @@ public class OrcamentoRepMem implements IOrcamentoRepositorio {
         if(p50 != null) ped2.addItem(new ItemPedidoModel(p50, 2));
         if(p20 != null) ped2.addItem(new ItemPedidoModel(p20, 1)); 
         orc2.addItensPedido(ped2);
+        orc2.setEstadoCliente("RS"); // Example for the second budget
         orc2.recalculaTotais(); // Calcula totais ao criar
         this.cadastra(orc2);
     }

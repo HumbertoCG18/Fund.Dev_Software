@@ -3,19 +3,22 @@ package com.bcopstein.sistvendas.dominio.modelos;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Locale; // Import Locale
 
 public class OrcamentoModel {
     private long id;
     private List<ItemPedidoModel> itens;
-    private double custoItens; // Subtotal dos itens
+    private double custoItens; 
     private double imposto;
     private double desconto;
-    private double custoConsumidor; // Custo final para o consumidor
+    private double custoConsumidor; 
     private boolean efetivado;
+    private String estadoCliente; 
+    private double aliquotaImpostoAplicada; // Added to store the rate used
 
     public OrcamentoModel(long id) {
         this.id = id;
-        this.itens = new LinkedList<>(); // Usar LinkedList para remoção eficiente de itens
+        this.itens = new LinkedList<>();
         this.efetivado = false;
     }
 
@@ -24,13 +27,25 @@ public class OrcamentoModel {
         this.efetivado = false;
     }
 
+    // Getter and Setter for estadoCliente
+    public String getEstadoCliente() {
+        return estadoCliente;
+    }
+
+    public void setEstadoCliente(String estadoCliente) {
+        this.estadoCliente = estadoCliente;
+    }
+
+    // Getter for aliquotaImpostoAplicada
+    public double getAliquotaImpostoAplicada() {
+        return aliquotaImpostoAplicada;
+    }
+    // No setter for aliquotaImpostoAplicada as it's internally calculated
+
     public void addItensPedido(PedidoModel pedido) {
         if (pedido != null && pedido.getItens() != null) {
             for (ItemPedidoModel itemPedido : pedido.getItens()) {
                 if (itemPedido != null && itemPedido.getProduto() != null) {
-                    // Evitar adicionar o mesmo produto múltiplas vezes como itens separados,
-                    // a menos que a intenção seja ter linhas distintas para o mesmo produto (raro em orçamentos).
-                    // Para simplificar, apenas adicionamos. A lógica de agrupar seria mais complexa.
                     this.itens.add(itemPedido);
                 }
             }
@@ -38,31 +53,48 @@ public class OrcamentoModel {
     }
 
     public List<ItemPedidoModel> getItens() {
-        return this.itens; // Retorna a lista original para permitir modificações internas (como remoção)
+        return this.itens; 
     }
 
     public boolean removeItemPorProdutoId(long produtoId) {
         if (this.isEfetivado()) {
-            // System.out.println("OrcamentoModel: Não é possível remover itens de um orçamento efetivado ID: " + this.id);
-            return false; // Regra de negócio: não alterar orçamentos efetivados
+            return false; 
         }
         int tamanhoOriginal = this.itens.size();
         this.itens = this.itens.stream()
                            .filter(item -> item.getProduto() != null && item.getProduto().getId() != produtoId)
-                           .collect(Collectors.toList()); // Recria a lista sem o item
+                           .collect(Collectors.toList()); 
         
         boolean removido = this.itens.size() < tamanhoOriginal;
         if (removido) {
-            // System.out.println("OrcamentoModel: Item com produto ID " + produtoId + " removido do orçamento ID: " + this.id);
-            recalculaTotais(); // Importante recalcular após a remoção
+            recalculaTotais(); 
         }
         return removido;
     }
+    
+    // This method is now public to be potentially used by OrcamentoDTO if needed,
+    // but it's better if OrcamentoModel stores the applied rate.
+    public double calculaAliquotaPorEstado(String estado) {
+        if (estado == null || estado.trim().isEmpty()) {
+            return 0.10; 
+        }
+        switch (estado.trim().toUpperCase()) {
+            case "RS":
+                return 0.12; 
+            case "SC":
+                return 0.07; 
+            case "PR":
+                return 0.11; 
+            case "SP":
+                return 0.18; 
+            default:
+                return 0.10; 
+        }
+    }
 
     public void recalculaTotais() {
-        if (this.isEfetivado()) {
-            // System.out.println("OrcamentoModel: Não é possível recalcular totais de um orçamento efetivado ID: " + this.id);
-            return; 
+        if (this.isEfetivado()) { 
+            return;
         }
 
         this.custoItens = 0;
@@ -73,15 +105,16 @@ public class OrcamentoModel {
                 .sum();
         }
 
-        this.imposto = this.custoItens * 0.1; // Exemplo: 10% de imposto
+        // Calculate and store the applicable tax rate
+        this.aliquotaImpostoAplicada = calculaAliquotaPorEstado(this.estadoCliente);
+        this.imposto = this.custoItens * this.aliquotaImpostoAplicada;
 
-        if (this.itens != null && this.itens.size() > 5) {
-            this.desconto = this.custoItens * 0.05; // Exemplo: 5% de desconto para mais de 5 tipos de itens
+        if (this.itens != null && this.itens.size() > 5) { 
+            this.desconto = this.custoItens * 0.05; 
         } else {
             this.desconto = 0.0;
         }
         this.custoConsumidor = this.custoItens + this.imposto - this.desconto;
-        // System.out.println("OrcamentoModel ID " + this.id + " totais recalculados: Subtotal=" + this.custoItens + ", Imposto=" + this.imposto + ", Desconto=" + this.desconto + ", Total=" + this.custoConsumidor);
     }
 
     // Getters e Setters
@@ -91,7 +124,7 @@ public class OrcamentoModel {
     public double getCustoItens() { return custoItens; }
     public void setCustoItens(double custoItens) { this.custoItens = custoItens; }
 
-    public double getImposto() { return imposto; }
+    public double getImposto() { return imposto; } // This still returns the double value
     public void setImposto(double imposto) { this.imposto = imposto; }
 
     public double getDesconto() { return desconto; }
@@ -101,15 +134,21 @@ public class OrcamentoModel {
     public void setCustoConsumidor(double custoConsumidor) { this.custoConsumidor = custoConsumidor; }
 
     public boolean isEfetivado() { return efetivado; }
-    public void efetiva() { this.efetivado = true; }
+    public void efetiva() { 
+        if (!this.efetivado) { 
+            this.efetivado = true; 
+        }
+    }
 
     @Override
     public String toString() {
         return "OrcamentoModel{" +
                 "id=" + id +
                 ", itens=" + (itens != null ? itens.size() : 0) + " itens" +
+                ", estadoCliente='" + estadoCliente + '\'' +
                 ", custoItens=" + custoItens +
-                ", imposto=" + imposto +
+                ", imposto=" + String.format(Locale.US, "%.2f (%.0f%%)", imposto, aliquotaImpostoAplicada * 100) + // Show formatted in toString too
+                ", aliquotaImpostoAplicada=" + aliquotaImpostoAplicada +
                 ", desconto=" + desconto +
                 ", custoConsumidor=" + custoConsumidor +
                 ", efetivado=" + efetivado +

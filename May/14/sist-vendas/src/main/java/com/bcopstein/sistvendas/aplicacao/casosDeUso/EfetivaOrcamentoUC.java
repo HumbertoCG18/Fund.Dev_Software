@@ -19,8 +19,9 @@ public class EfetivaOrcamentoUC {
     public OrcamentoDTO run(long idOrcamento){
         OrcamentoModel orcamento = servicoDeVendas.efetivaOrcamento(idOrcamento);
         if (orcamento == null) {
-            return null;
+            return null; // Orçamento não encontrado
         }
+        // O OrcamentoDTO.fromModel irá refletir o estado de 'efetivado' do OrcamentoModel
         return OrcamentoDTO.fromModel(orcamento);
     }
 }
