@@ -44,7 +44,7 @@
             border: 1px solid #2980b9;
             border-radius: 4px;
             cursor: pointer;
-            margin: 5px 0; /* Default margin, can be overridden by button-group gap */
+            margin: 5px 0; /* Margin padrão */
             transition: background-color 0.3s, transform 0.1s;
             font-weight: bold;
             display: inline-block;
@@ -104,7 +104,7 @@
             width: 120px;
         }
         input[type="checkbox"] {
-            width: auto; /* Checkboxes should not be full width */
+            width: auto; /* As caixas de seleção não devem ter largura total */
             margin-right: 5px;
         }
 
@@ -180,29 +180,28 @@
 
         .button-group {
             display: flex;
-            /* justify-content: flex-start; Default behavior */
-            align-items: center; /* Vertically align items in the group */
-            gap: 10px; /* Spacing between items */
+            /* justify-content: flex-start; Padrão */
+            align-items: center; 
+            gap: 10px; 
             margin-top: 10px;
-            flex-wrap: wrap; /* Allow items to wrap if not enough space */
+            flex-wrap: wrap; 
         }
-         /* Specific styling for the product management actions row */
         .product-actions-group {
             display: flex;
-            align-items: center; /* Align button and checkbox vertically */
-            gap: 15px; /* Adjust gap as needed */
+            align-items: center; 
+            gap: 15px; 
             margin-top: 10px;
-            margin-bottom: 15px; /* Add some space below this group */
+            margin-bottom: 15px; 
         }
-        .product-actions-group label { /* Style for the checkbox label */
+        .product-actions-group label { 
             display: inline-flex; 
             align-items: center; 
             gap: 5px; 
-            margin: 0; /* Remove default label margins if any */
-            font-weight: normal; /* Optional: make label text normal weight */
+            margin: 0; 
+            font-weight: normal; 
         }
          .product-actions-group button {
-            margin: 0; /* Remove default button margins to rely on gap */
+            margin: 0; 
         }
 
 
@@ -358,16 +357,16 @@
 
         async function carregarProdutosParaGerenciamento() {
             try {
-                // Clear previous result before loading
+                // Limpa os resultados anteriores antes de carregar.
                 document.getElementById('produtosGerenciamentoResult').style.display = 'none';
                 document.getElementById('produtosGerenciamentoResult').innerHTML = '';
 
-                exibirResultadoOperacao('produtosGerenciamentoResult', 'Carregando produtos para gerenciamento...', 'loading');
+                exibirResultadoOperacao('produtosGerenciamentoResult', 'Carregando produtos para gerenciamento...', 'Carregando');
                 const response = await fetch('/todosProdutosStatus'); 
                 produtosCarregadosParaGerenciamento = await handleFetchError(response);
                 renderizarProdutosComoCards(); 
-                // Hide loading message if successful and no other message is shown by render
-                if (document.getElementById('produtosGerenciamentoResult').classList.contains('loading')) {
+                // Esconde a mensagem de "Carregando" se não houver nenhum erro e outra mensagem é renderizada.
+                if (document.getElementById('produtosGerenciamentoResult').classList.contains('Carregando')) {
                     document.getElementById('produtosGerenciamentoResult').style.display = 'none';
                 }
             } catch (error) {
@@ -450,7 +449,7 @@
                     produtosDisponiveisParaDropdown.forEach(produto => {
                         const option = document.createElement('option');
                         option.value = produto.id;
-                        // Assuming produtosDisponiveisParaDropdown contains items with id, descricao, precoUnitario
+                        // Assumindo que produtosDisponiveisParaDropdown contém items com id, descricao, precoUnitario
                         option.textContent = `${produto.id} - ${produto.descricao} (R$ ${(produto.precoUnitario || 0).toFixed(2)})`;
                         seletor.appendChild(option);
                     });
@@ -468,7 +467,7 @@
                 return;
             }
             const ul = document.createElement('ul');
-            orcamentosCarregados.sort((a,b) => b.id - a.id); 
+            orcamentosCarregados.sort((a,b) => a.id - b.id); 
             orcamentosCarregados.forEach(orc => {
                 const li = document.createElement('li');
                 const status = orc.efetivado ? '<span style="color: green;">(EFETIVADO)</span>' : '<span style="color: orange;">(PENDENTE)</span>';
@@ -509,7 +508,7 @@
             if (produtosCarregadosParaGerenciamento && produtosCarregadosParaGerenciamento.length > 0) {
                  exibirResultadoOperacao('produtosGerenciamentoResult', produtosCarregadosParaGerenciamento);
             } else {
-                 // Attempt to load if empty
+                 // Tenta carregar caso esteja vazio.
                  await carregarProdutosParaGerenciamento();
                  if (produtosCarregadosParaGerenciamento && produtosCarregadosParaGerenciamento.length > 0){
                     exibirResultadoOperacao('produtosGerenciamentoResult', produtosCarregadosParaGerenciamento);
@@ -578,17 +577,17 @@
             try {
                 const response = await fetch(`/efetivaOrcamento/${orcamentoId}`); 
                 const orcProcessado = await handleFetchError(response);
-                // Check if the budget was actually effectived (stock might have been an issue)
+                // Verifica se o orçamento realmente foi efetivado (Talvez haja um problema)
                 if (orcProcessado && orcProcessado.efetivado) {
                     exibirResultadoOperacao('gerenciarOrcamentoResult', orcProcessado);
                 } else if (orcProcessado) {
                      exibirResultadoOperacao('gerenciarOrcamentoResult', {...orcProcessado, mensagem: "Orçamento não efetivado devido à falta de estoque ou outro problema."}, 'error');
-                } else { // Should not happen if ID is valid
+                } else { // Não deve acontecer se o ID for inválido.
                      exibirResultadoOperacao('gerenciarOrcamentoResult', 'Falha ao processar efetivação. Orçamento não encontrado ou resposta inválida.', 'error');
                 }
                 await carregarTodosOrcamentosParaGerenciamento(); 
-                 await carregarProdutosParaGerenciamento(); // Refresh products as stock changed
-                 await carregarProdutosParaDropdownsOrcamento(); // Also refresh dropdowns
+                 await carregarProdutosParaGerenciamento(); // Atualiza os produtos se houver uma mudança.
+                 await carregarProdutosParaDropdownsOrcamento(); // Atualiza o dropdown se houver uma mudança.
             } catch (error) {
                 exibirResultadoOperacao('gerenciarOrcamentoResult', `Erro ao efetivar orçamento #${orcamentoId}: ${error.message}`, 'error');
             }

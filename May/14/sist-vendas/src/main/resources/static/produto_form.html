@@ -4,20 +4,94 @@
     <meta charset="UTF-8">
     <title>Gerenciar Produto</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
-        .container { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        h2 { color: #333; text-align: center; }
-        label { display: block; margin-top: 10px; color: #555; }
-        input[type="text"], input[type="number"] { width: calc(100% - 22px); padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        .button-group { margin-top: 20px; text-align: right; }
-        button { background-color: #5cb85c; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px; }
-        button:hover { background-color: #4cae4c; }
-        button.cancel { background-color: #f0ad4e; }
-        button.cancel:hover { background-color: #eea236; }
-        .result { margin-top:15px; padding:10px; border-radius:4px; font-size:0.9em; }
-        .error { background-color:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
-        .success { background-color:#d4edda; color:#155724; border:1px solid #c3e6cb; }
-        .loading { background-color:#e2e3e5; color:#383d41; border:1px solid #d6d8db; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #919191;
+        }
+    
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+            border: 1px solid black;
+        }
+    
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+    
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #555;
+        }
+    
+        input[type="text"],
+        input[type="number"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid black;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    
+        .button-group {
+            margin-top: 20px;
+            text-align: right;
+        }
+    
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    
+        button:hover {
+            background-color: #4cae4c;
+        }
+    
+        button.cancel {
+            background-color: #f0ad4e;
+        }
+    
+        button.cancel:hover {
+            background-color: #eea236;
+        }
+    
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+    
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    
+        .loading {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+        }
     </style>
 </head>
 <body>
@@ -69,8 +143,8 @@
                 editMode = true;
                 document.getElementById('produtoFormPopupTitulo').textContent = `Editando Produto ID: ${produtoIdToEdit}`;
                 document.getElementById('produtoIdFormPopup').value = produtoIdToEdit;
-                // For edit, hide initial stock. Stock management could be a separate feature or part of edit.
-                // For simplicity now, editing description/price. If you want to edit stock details, show these fields.
+                // Para edição, oculte o estoque inicial. O gerenciamento de estoque pode ser um recurso separado ou parte da edição.
+                // Para simplificar, agora, a edição de descrição/preço. Se você quiser editar detalhes do estoque, mostre esses campos.
                 document.getElementById('estoqueDivPopup').style.display = 'none'; 
                 
                 // Fetch product details to populate form
@@ -83,35 +157,35 @@
 
         async function fetchProductDetails(id) {
             try {
-                // To get product details for editing, we need an endpoint that returns a single ProdutoEstoqueDTO or ProdutoDTO
-                // Let's assume /todosProdutosStatus also works for getting a single one if we filter client-side
-                // or ideally, a /produtos/{id}/details endpoint.
-                // For now, we'll try to find it in what opener might have or fetch /todosProdutosStatus and filter.
-                // This is a simplification. A dedicated GET /produtos/{id} returning enough detail is better.
+                // Para obter detalhes do produto para edição, precisamos de um endpoint que retorne um único ProdutoEstoqueDTO ou ProdutoDTO
+                // Vamos supor que /todosProdutosStatus também funcione para obter um único se filtrarmos no lado do cliente
+                // ou idealmente, um /produtos/{id}/details endpoint.
+                // Por enquanto, tentaremos encontrá-lo no que o abridor pode ter ou buscar /todosProdutosStatus e filtrar.
+                // Essa é uma simplificação. Um GET /produtos/{id} dedicado que retorne detalhes suficientes é melhor.
                 
-                // If opener.produtosCarregadosParaGerenciamento exists and is accessible (same origin)
+                // Se opener.produtosCarregadosParaGerenciamento existir e estiver acessível (mesma origem)
                 if (window.opener && window.opener.produtosCarregadosParaGerenciamento) {
                     const produto = window.opener.produtosCarregadosParaGerenciamento.find(p => p.id == id);
                     if (produto) {
                         document.getElementById('produtoDescricaoPopup').value = produto.descricao;
                         document.getElementById('produtoPrecoPopup').value = produto.precoUnitario;
-                        // If editing stock, populate those too from produto.quantidadeEmEstoque etc.
-                        // For now, `estoqueDivPopup` is hidden on edit mode.
+                        // Se estiver editando o estoque, preencha-o também a partir de produto.quantidadeEmEstoque etc.
+                        // Por hora, `estoqueDivPopup` está escondido no modo de edição.
                         return;
                     }
                 }
-                // Fallback or primary way: fetch from a suitable endpoint
-                // This endpoint is not defined yet in the controller to return a single ProdutoEstoqueDTO
-                // const response = await fetch(`/api/produtos/${id}/details`); // hypothetical endpoint
+                // Modo secundário ou principal: buscar em um endpoint adequado
+                // Esse endpoint não está definido ainda nocontroller para retornar um ProdutoEstoqueDTO
+                // const response = await fetch(`/api/produtos/${id}/details`); // Possivel endpoint à ser implementado
                 // const produto = await response.json();
                 // document.getElementById('produtoDescricaoPopup').value = produto.descricao;
                 // document.getElementById('produtoPrecoPopup').value = produto.precoUnitario;
                 console.warn("Simplified edit: Did not pre-fetch full product details for editing beyond basic fields. Implement GET /produtos/{id}/details for robust editing.");
-                // For now, user can only edit desc/price without seeing current stock values in edit form.
-                // The PUT request will only send desc/price.
+                // Por enquanto, o usuário só pode editar a descrição/preço sem ver os valores atuais do estoque no formulário de edição.
+                // A solicitação PUT enviará apenas desc/price.
                  document.getElementById('produtoDescricaoPopup').value = "Carregando..."; // Placeholder
                  document.getElementById('produtoPrecoPopup').value = "";
-                 // Try fetching from the list endpoint and filtering - less efficient but works for demo
+                 // Tente buscar no endpoint e filtrar - menos eficiente, mas funciona para a demonstração
                  const response = await fetch('/todosProdutosStatus');
                  if (!response.ok) throw new Error('Falha ao buscar detalhes do produto para edição.');
                  const produtos = await response.json();
@@ -146,10 +220,10 @@
             if (editMode && id) { 
                 method = 'PUT';
                 url += `/${id}`;
-                // For edit, only send properties that are editable through this form.
-                // Current form only has desc and price for edit.
+                // Para edição, envie apenas as propriedades que podem ser editadas por meio desse formulário.
+                // O formulário atual só tem desc e preço para edição.
                 payload = { id: parseInt(id), descricao, precoUnitario: preco };
-            } else { // New product
+            } else { // Novo Produto
                 const qtdIniStr = document.getElementById('produtoEstoqueInicialPopup').value;
                 const estMinStr = document.getElementById('produtoEstoqueMinPopup').value;
                 const estMaxStr = document.getElementById('produtoEstoqueMaxPopup').value;
