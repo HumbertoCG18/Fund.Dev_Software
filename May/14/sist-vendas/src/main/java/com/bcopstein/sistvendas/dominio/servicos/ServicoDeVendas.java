@@ -1,127 +1,123 @@
 package com.bcopstein.sistvendas.dominio.servicos;
 
 import java.util.List;
+//import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.bcopstein.sistvendas.dominio.modelos.OrcamentoModel;
 import com.bcopstein.sistvendas.dominio.modelos.PedidoModel;
 import com.bcopstein.sistvendas.dominio.modelos.ProdutoModel;
 import com.bcopstein.sistvendas.dominio.modelos.ItemPedidoModel;
-import com.bcopstein.sistvendas.dominio.persistencia.IEstoqueRepositorio;
 import com.bcopstein.sistvendas.dominio.persistencia.IOrcamentoRepositorio;
 
 @Service
 public class ServicoDeVendas {
     private IOrcamentoRepositorio orcamentosRepo;
-    private IEstoqueRepositorio estoqueRepo;
-    // private String estadoClienteParaNovoOrcamento; // To be used with Improvement 2
+    private ServicoDeEstoque servicoDeEstoque; // Injeta ServicoDeEstoque
 
     @Autowired
-    public ServicoDeVendas(IOrcamentoRepositorio orcamentos, IEstoqueRepositorio estoque) {
+    public ServicoDeVendas(IOrcamentoRepositorio orcamentos, ServicoDeEstoque servicoDeEstoque) {
         this.orcamentosRepo = orcamentos;
-        this.estoqueRepo = estoque;
+        this.servicoDeEstoque = servicoDeEstoque;
     }
 
     public List<ProdutoModel> produtosDisponiveis() {
-        return estoqueRepo.todosComEstoque();
+        return servicoDeEstoque.produtosDisponiveis();
     }
 
     public OrcamentoModel recuperaOrcamentoPorId(long id) {
-        return this.orcamentosRepo.recuperaPorId(id);
+        return this.orcamentosRepo.findById(id).orElse(null);
     }
 
-    // Modified for Improvement 2: Tax by Region
+    @Transactional
     public OrcamentoModel criaOrcamento(PedidoModel pedido, String estadoCliente) {
         if (pedido == null || pedido.getItens() == null || pedido.getItens().isEmpty()) {
             throw new IllegalArgumentException("Pedido inválido: não pode ser nulo ou vazio.");
         }
-        for(ItemPedidoModel item : pedido.getItens()){
-            if(item.getProduto() == null){
+        for (ItemPedidoModel item : pedido.getItens()) {
+            if (item.getProduto() == null) {
                 throw new IllegalArgumentException("Item de pedido inválido: produto não pode ser nulo.");
             }
-            if(item.getQuantidade() <=0){
+            if (item.getQuantidade() <= 0) {
                 throw new IllegalArgumentException("Item de pedido inválido: quantidade deve ser positiva.");
             }
         }
 
-        var novoOrcamento = new OrcamentoModel();
-        novoOrcamento.setEstadoCliente(estadoCliente); // For Improvement 2
-        novoOrcamento.addItensPedido(pedido);
-        novoOrcamento.recalculaTotais(); 
-        
-        return this.orcamentosRepo.cadastra(novoOrcamento);
+        OrcamentoModel novoOrcamento = new OrcamentoModel();
+        novoOrcamento.setEstadoCliente(estadoCliente);
+        novoOrcamento.addItensPedido(pedido); // addItensPedido now sets the orcamento link
+        novoOrcamento.recalculaTotais();
+
+        return this.orcamentosRepo.save(novoOrcamento); // Usa save do JpaRepository
     }
 
+    @Transactional
     public OrcamentoModel efetivaOrcamento(long id) {
-        OrcamentoModel orcamento = this.orcamentosRepo.recuperaPorId(id);
-        if (orcamento == null) {
-            // System.err.println("ServicoDeVendas: Orçamento ID " + id + " não encontrado para efetivação.");
-            return null;
-        }
+        OrcamentoModel orcamento = this.orcamentosRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Orçamento ID " + id + " não encontrado para efetivação."));
+
         if (orcamento.isEfetivado()) {
-            // System.out.println("ServicoDeVendas: Orçamento ID " + id + " já está efetivado.");
             return orcamento;
         }
-        
-        if(orcamento.getItens() == null || orcamento.getItens().isEmpty()){
+
+        if (orcamento.getItens() == null || orcamento.getItens().isEmpty()) {
             throw new IllegalStateException("Orçamento ID " + id + " não pode ser efetivado pois não contém itens.");
         }
 
         boolean todosDisponiveis = true;
         for (var item : orcamento.getItens()) {
-            if (item.getProduto() == null) { 
-                 todosDisponiveis = false; 
-                 // System.err.println("ServicoDeVendas: Item no orçamento ID " + id + " com produto nulo.");
-                 break;
+            if (item.getProduto() == null) {
+                todosDisponiveis = false;
+                break;
             }
-            int quantidadeEmEstoque = estoqueRepo.quantidadeEmEstoque(item.getProduto().getId());
+            int quantidadeEmEstoque = servicoDeEstoque.qtdadeEmEstoque(item.getProduto().getId());
             if (quantidadeEmEstoque < item.getQuantidade()) {
-                // System.out.println("ServicoDeVendas: Produto ID " + item.getProduto().getId() + " com estoque insuficiente ("+quantidadeEmEstoque+") para o orçamento ID " + id + " (solicitado: "+item.getQuantidade()+").");
-                todosDisponiveis = false; 
+                todosDisponiveis = false;
                 break;
             }
         }
 
         if (todosDisponiveis) {
             for (var item : orcamento.getItens()) {
-                estoqueRepo.baixaEstoque(item.getProduto().getId(), item.getQuantidade());
+                servicoDeEstoque.baixaEstoque(item.getProduto().getId(), item.getQuantidade());
             }
-            orcamentosRepo.marcaComoEfetivado(orcamento.getId()); 
-            // System.out.println("ServicoDeVendas: Orçamento ID " + id + " efetivado com sucesso.");
+            orcamento.efetiva();
+            orcamentosRepo.save(orcamento); // Salva o orçamento atualizado
         } else {
             System.out.println("ServicoDeVendas: Orçamento ID " + id + " NÃO efetivado (itens indisponíveis ou erro).");
+            // Não salva, mas retorna o estado atual (não efetivado)
         }
-        // o método recuperaPorId no OrcamentoRepMem já retorna o objeto com o estado atualizado (efetivado ou não)
-        // Se não foi efetivado, o DTO converterá orcamento.isEfetivado() para false.
-        // Se foi efetivado, orcamento.isEfetivado() será true.
-        return orcamentosRepo.recuperaPorId(id); // Re-fetch to ensure the latest state, especially if `marcaComoEfetivado` modifies and saves.
-                                                 // Or ensure `orcamento.efetiva()` updates the instance correctly and it's the same instance.
-                                                 // Given RepMem, orcamento instance is modified directly.
+        return orcamento;
     }
 
     public List<OrcamentoModel> ultimosOrcamentosEfetivados(int n) {
-        return this.orcamentosRepo.ultimosEfetivados(n);
+        return this.orcamentosRepo.findByEfetivadoIsTrueOrderByIdDesc(PageRequest.of(0, n));
     }
 
+    @Transactional
     public void atualizarOrcamentosAposRemocaoProduto(long produtoIdRemovido) {
-        List<OrcamentoModel> todosOrcamentos = orcamentosRepo.todos();
+        List<OrcamentoModel> todosOrcamentos = orcamentosRepo.findAll();
         for (OrcamentoModel orcamento : todosOrcamentos) {
             if (!orcamento.isEfetivado()) {
                 boolean itemFoiRemovido = orcamento.removeItemPorProdutoId(produtoIdRemovido);
                 if (itemFoiRemovido) {
-                    orcamentosRepo.atualiza(orcamento);
+                    orcamentosRepo.save(orcamento); // Salva o orçamento modificado
                 }
             }
         }
     }
 
+    @Transactional
     public boolean removerOrcamento(long orcamentoId) {
-        OrcamentoModel orcamentoExistente = orcamentosRepo.recuperaPorId(orcamentoId);
+        OrcamentoModel orcamentoExistente = orcamentosRepo.findById(orcamentoId).orElse(null);
         if (orcamentoExistente == null) {
-            return false; 
+            return false;
         }
-        return orcamentosRepo.removePorId(orcamentoId);
+        orcamentosRepo.deleteById(orcamentoId); // Usa deleteById do JpaRepository
+        return true;
     }
 }

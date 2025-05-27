@@ -1,12 +1,9 @@
 package com.bcopstein.sistvendas.dominio.persistencia;
 
-import java.util.List;
 import com.bcopstein.sistvendas.dominio.modelos.ProdutoModel;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface IProdutoRepositorio {
-    List<ProdutoModel> todos();
-    ProdutoModel consultaPorId(long codigo);
-    ProdutoModel cadastra(ProdutoModel novoProduto); 
-    ProdutoModel atualiza(ProdutoModel produtoEditado); 
-    boolean removePorId(long id); // Added for completeness, as error implies it's expected
+@Repository
+public interface IProdutoRepositorio extends JpaRepository<ProdutoModel, Long> {
 }

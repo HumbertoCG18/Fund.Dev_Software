@@ -1,12 +1,28 @@
 package com.bcopstein.sistvendas.dominio.modelos;
 
-public class ItemDeEstoqueModel{
-    private long id; 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "item_de_estoque")
+public class ItemDeEstoqueModel {
+    @Id
+    private long id;
+
+    @OneToOne
+    @JoinColumn(name = "produto_id")
     private ProdutoModel produto;
+
     private int quantidade;
     private int estoqueMin;
     private int estoqueMax;
-    private boolean listado = true; // Added for soft delete/listing control
+    private boolean listado = true;
+
+    // Construtor padrão para JPA
+    protected ItemDeEstoqueModel() {}
 
     public ItemDeEstoqueModel(long id, ProdutoModel produto, int quantidade, int estoqueMin, int estoqueMax) {
         this.id = id;
@@ -14,52 +30,22 @@ public class ItemDeEstoqueModel{
         this.quantidade = quantidade;
         this.estoqueMin = estoqueMin;
         this.estoqueMax = estoqueMax;
-        this.listado = true; // Default to true
+        this.listado = true;
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public ProdutoModel getProduto() {
-        return produto;
-    }
-
-    public int getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(int quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    public int getEstoqueMin() {
-        return estoqueMin;
-    }
-
-    public void setEstoqueMin(int estoqueMin) {
-        this.estoqueMin = estoqueMin;
-    }
-
-    public int getEstoqueMax() {
-        return estoqueMax;
-    }
-
-    public void setEstoqueMax(int estoqueMax) {
-        this.estoqueMax = estoqueMax;
-    }
-
-    public boolean isListado() { // Added getter
-        return listado;
-    }
-
-    public void setListado(boolean listado) { // Added setter
-        this.listado = listado;
-    }
+    // Getters e Setters
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
+    public ProdutoModel getProduto() { return produto; }
+    public void setProduto(ProdutoModel produto) { this.produto = produto; }
+    public int getQuantidade() { return quantidade; }
+    public void setQuantidade(int quantidade) { this.quantidade = quantidade; }
+    public int getEstoqueMin() { return estoqueMin; }
+    public void setEstoqueMin(int estoqueMin) { this.estoqueMin = estoqueMin; }
+    public int getEstoqueMax() { return estoqueMax; }
+    public void setEstoqueMax(int estoqueMax) { this.estoqueMax = estoqueMax; }
+    public boolean isListado() { return listado; }
+    public void setListado(boolean listado) { this.listado = listado; }
 
     @Override
     public String toString() {
@@ -69,7 +55,7 @@ public class ItemDeEstoqueModel{
                 ", quantidade=" + quantidade +
                 ", estoqueMin=" + estoqueMin +
                 ", estoqueMax=" + estoqueMax +
-                ", listado=" + listado + // Added to toString
+                ", listado=" + listado +
                 ']';
     }
 }

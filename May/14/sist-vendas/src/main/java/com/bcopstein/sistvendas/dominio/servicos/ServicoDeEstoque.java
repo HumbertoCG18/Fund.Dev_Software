@@ -5,133 +5,114 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.bcopstein.sistvendas.dominio.persistencia.IEstoqueRepositorio;
 import com.bcopstein.sistvendas.dominio.persistencia.IProdutoRepositorio;
 import com.bcopstein.sistvendas.dominio.modelos.ProdutoModel;
 import com.bcopstein.sistvendas.dominio.modelos.ItemDeEstoqueModel;
 import com.bcopstein.sistvendas.aplicacao.dtos.NovoProdutoRequestDTO;
-import com.bcopstein.sistvendas.aplicacao.dtos.ProdutoDTO; // Keep for editing payload
-import com.bcopstein.sistvendas.aplicacao.dtos.ProdutoEstoqueDTO; // New DTO for list
+import com.bcopstein.sistvendas.aplicacao.dtos.ProdutoDTO;
+import com.bcopstein.sistvendas.aplicacao.dtos.ProdutoEstoqueDTO;
 
 @Service
 public class ServicoDeEstoque {
     private IEstoqueRepositorio estoqueRepo;
     private IProdutoRepositorio produtosRepo;
-    private ServicoDeVendas servicoDeVendas; 
 
     @Autowired
-    public ServicoDeEstoque(IProdutoRepositorio produtos, 
-                            IEstoqueRepositorio estoque, 
-                            ServicoDeVendas servicoDeVendas) { 
+    public ServicoDeEstoque(IProdutoRepositorio produtos, IEstoqueRepositorio estoque) {
         this.produtosRepo = produtos;
         this.estoqueRepo = estoque;
-        this.servicoDeVendas = servicoDeVendas;
     }
 
-    public List<ProdutoModel> produtosDisponiveis() { // Used for creating budgets
-        return estoqueRepo.todosComEstoque();
+    public List<ProdutoModel> produtosDisponiveis() {
+        return estoqueRepo.findByListadoTrueAndQuantidadeGreaterThan(0)
+                .stream()
+                .map(ItemDeEstoqueModel::getProduto)
+                .collect(Collectors.toList());
     }
 
-    // New method to get all products with their full stock status for management UI
     public List<ProdutoEstoqueDTO> getTodosProdutosComStatusEstoque() {
-        List<ProdutoModel> todosProdutosCatalogados = produtosRepo.todos();
+        List<ProdutoModel> todosProdutosCatalogados = produtosRepo.findAll();
         return todosProdutosCatalogados.stream()
-            .map(produto -> {
-                ItemDeEstoqueModel itemEstoque = estoqueRepo.consultaItemPorProdutoId(produto.getId());
-                if (itemEstoque == null) {
-                    // This case implies a product exists in catalog but not in stock ledger
-                    // Create a "default" or "unmanaged" stock item representation for DTO
-                    // Or, ensure every product always has an ItemDeEstoqueModel.
-                    // For now, let's assume if no ItemDeEstoqueModel, it's effectively unlistado and 0 quantity.
-                    // This might happen if a product was added to ProdutoRepMem but not EstoqueRepMem init.
-                    // System.err.println("ServicoDeEstoque: Produto ID " + produto.getId() + " não possui ItemDeEstoqueModel correspondente.");
-                    // To prevent nulls in DTO construction for such cases:
-                    ItemDeEstoqueModel dummyItem = new ItemDeEstoqueModel(0, produto, 0, 0, 0);
-                    dummyItem.setListado(false); // Treat as unlistado if no stock record
-                    return ProdutoEstoqueDTO.fromModels(produto, dummyItem);
-
-                }
-                return ProdutoEstoqueDTO.fromModels(produto, itemEstoque);
-            })
-            .collect(Collectors.toList());
+                .map(produto -> {
+                    ItemDeEstoqueModel itemEstoque = estoqueRepo.findByProdutoId(produto.getId());
+                    if (itemEstoque == null) {
+                        // Se não houver item de estoque, cria um 'dummy' não listado
+                        ItemDeEstoqueModel dummyItem = new ItemDeEstoqueModel(0, produto, 0, 0, 0);
+                        dummyItem.setListado(false);
+                        return ProdutoEstoqueDTO.fromModels(produto, dummyItem);
+                    }
+                    return ProdutoEstoqueDTO.fromModels(produto, itemEstoque);
+                })
+                .collect(Collectors.toList());
     }
-
 
     public ProdutoModel produtoPorCodigo(long id) {
-        ProdutoModel produto = this.produtosRepo.consultaPorId(id);
-         if (produto == null) {
-             System.err.println("ServicoDeEstoque: Produto com ID " + id + " não encontrado.");
-         }
-        return produto;
+        return produtosRepo.findById(id).orElse(null);
     }
 
     public int qtdadeEmEstoque(long idProduto) {
-        return estoqueRepo.quantidadeEmEstoque(idProduto);
+        ItemDeEstoqueModel item = estoqueRepo.findByProdutoId(idProduto);
+        return (item != null && item.isListado()) ? item.getQuantidade() : 0;
     }
 
+    @Transactional
     public void baixaEstoque(long idProduto, int qtdade) {
-        estoqueRepo.baixaEstoque(idProduto, qtdade);
+        ItemDeEstoqueModel item = estoqueRepo.findByProdutoId(idProduto);
+        if (item == null || !item.isListado()) {
+            throw new IllegalArgumentException("Produto com ID " + idProduto + " não encontrado ou não listado no estoque para dar baixa.");
+        }
+        if (item.getQuantidade() < qtdade) {
+            throw new IllegalArgumentException("Quantidade em estoque (" + item.getQuantidade() + ") insuficiente para o produto ID " + idProduto + " (solicitado: " + qtdade + ").");
+        }
+        item.setQuantidade(item.getQuantidade() - qtdade);
+        estoqueRepo.save(item);
     }
 
+    @Transactional
     public ProdutoModel adicionarNovoProduto(NovoProdutoRequestDTO novoProdutoInfo) {
-        // ... (validations as before)
-        ProdutoModel novoProduto = new ProdutoModel(0, 
-            novoProdutoInfo.getDescricao(), 
-            novoProdutoInfo.getPrecoUnitario());
-        ProdutoModel produtoCadastrado = produtosRepo.cadastra(novoProduto);
+        // Validação básica
+        if (novoProdutoInfo == null || novoProdutoInfo.getDescricao() == null || novoProdutoInfo.getDescricao().isEmpty() || novoProdutoInfo.getPrecoUnitario() <= 0) {
+             throw new IllegalArgumentException("Dados inválidos para novo produto.");
+        }
+        
+        ProdutoModel novoProduto = new ProdutoModel(0, // ID será gerado pelo BD
+                novoProdutoInfo.getDescricao(),
+                novoProdutoInfo.getPrecoUnitario());
+        ProdutoModel produtoCadastrado = produtosRepo.save(novoProduto);
 
         ItemDeEstoqueModel novoItemEstoque = new ItemDeEstoqueModel(
-            0, 
-            produtoCadastrado, 
-            novoProdutoInfo.getQuantidadeInicialEstoque(),
-            novoProdutoInfo.getEstoqueMin(),
-            novoProdutoInfo.getEstoqueMax()
+                0, // ID será gerado pelo BD
+                produtoCadastrado,
+                novoProdutoInfo.getQuantidadeInicialEstoque(),
+                novoProdutoInfo.getEstoqueMin(),
+                novoProdutoInfo.getEstoqueMax()
         );
-        // novoItemEstoque.setListado(true); // Already default in constructor
-        estoqueRepo.cadastraItemEstoque(novoItemEstoque);
+        estoqueRepo.save(novoItemEstoque);
         return produtoCadastrado;
     }
 
+    @Transactional
     public ProdutoModel editarProduto(long produtoId, ProdutoDTO produtoEditadoInfo) {
-        // ... (validations as before)
-        // Here, ProdutoDTO is used as a payload for basic product properties.
-        // Stock properties (quantity, min, max, listado) are edited via different means if needed
-        // or this method could be expanded if ProdutoDTO carried those for editing too.
-        // For now, it only edits description and price of ProdutoModel.
-        ProdutoModel produtoExistente = produtosRepo.consultaPorId(produtoId);
-        if (produtoExistente == null) {
-            throw new IllegalArgumentException("Produto com ID " + produtoId + " não encontrado para edição.");
-        }
-        // Further check: if the product is associated with an ItemDeEstoqueModel that is !listado,
-        // should editing basic properties be allowed? For now, yes.
-        
+        ProdutoModel produtoExistente = produtosRepo.findById(produtoId)
+            .orElseThrow(() -> new IllegalArgumentException("Produto com ID " + produtoId + " não encontrado para edição."));
+            
         produtoExistente.setDescricao(produtoEditadoInfo.getDescricao());
         produtoExistente.setPrecoUnitario(produtoEditadoInfo.getPrecoUnitario());
         
-        ProdutoModel produtoAtualizado = produtosRepo.atualiza(produtoExistente);
-        // If price changes, non-efetivado orcamentos might need re-evaluation.
-        // This is a complex side effect not explicitly requested to handle here.
-        return produtoAtualizado;
+        return produtosRepo.save(produtoExistente);
     }
 
-    // Renamed from removerProdutoCompleto
+    @Transactional
     public boolean desativarProduto(long produtoId) {
-        ProdutoModel produto = produtosRepo.consultaPorId(produtoId);
-        if (produto == null) {
-            return false; 
+        ItemDeEstoqueModel item = estoqueRepo.findByProdutoId(produtoId);
+        if (item != null) {
+            item.setListado(false);
+            estoqueRepo.save(item);
+            return true;
         }
-        servicoDeVendas.atualizarOrcamentosAposRemocaoProduto(produtoId);
-        
-        boolean delistado = estoqueRepo.delistarProdutoDeEstoque(produtoId);
-        // The ProdutoModel itself is NOT removed from produtosRepo.
-        // It's only marked as not listado in the stock.
-        
-        // if (delistado) {
-        //     System.out.println("ServicoDeEstoque: Produto ID " + produtoId + " desativado (delistado do estoque).");
-        // } else {
-        //     System.out.println("ServicoDeEstoque: Falha ao desativar produto ID " + produtoId + " (não encontrado no estoque para delistar).");
-        // }
-        return delistado;
+        return false;
     }
 }

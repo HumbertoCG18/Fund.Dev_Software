@@ -20,12 +20,13 @@ public class TodosOrcamentosUC {
     }
 
     public List<OrcamentoDTO> run() {
-        List<OrcamentoModel> orcamentos = orcamentoRepositorio.todos();
-        if (orcamentos == null) {
-            return List.of(); // Retorna lista vazia se o repositório retornar nulo
-        }
+        // Altera a chamada de todos() para findAll()
+        List<OrcamentoModel> orcamentos = orcamentoRepositorio.findAll();
+
+        // Remove a verificação 'if (orcamentos == null)', pois findAll() nunca retorna null.
+        // O stream() já lida corretamente com listas vazias.
         return orcamentos.stream()
-                .map(orc -> OrcamentoDTO.fromModel(orc)) // Usa o fromModel atualizado
+                .map(OrcamentoDTO::fromModel) // Usa o fromModel atualizado
                 .collect(Collectors.toList());
     }
 }

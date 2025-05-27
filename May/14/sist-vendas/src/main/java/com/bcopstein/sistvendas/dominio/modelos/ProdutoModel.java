@@ -1,9 +1,19 @@
 package com.bcopstein.sistvendas.dominio.modelos;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "produto")
 public class ProdutoModel {
+    @Id
     private long id;
     private String descricao;
     private double precoUnitario;
+
+    // Construtor padrão para JPA
+    protected ProdutoModel() {}
 
     public ProdutoModel(long id, String descricao, double precoUnitario) {
         this.id = id;
@@ -15,7 +25,6 @@ public class ProdutoModel {
         return this.id;
     }
 
-    // Setter for ID - useful if ID is assigned after object creation by repository
     public void setId(long id) {
         this.id = id;
     }
@@ -24,7 +33,6 @@ public class ProdutoModel {
         return this.descricao;
     }
 
-    // Setter for descricao - NEEDED FOR EDIT FUNCTIONALITY
     public void setDescricao(String descricao) {
         this.descricao = descricao;
     }
@@ -33,7 +41,6 @@ public class ProdutoModel {
         return this.precoUnitario;
     }
 
-    // Setter for precoUnitario - NEEDED FOR EDIT FUNCTIONALITY
     public void setPrecoUnitario(double precoUnitario) {
         this.precoUnitario = precoUnitario;
     }
