@@ -22,8 +22,9 @@ import com.bcopstein.sistvendas.aplicacao.dtos.*;
 
 @RestController
 public class Controller {
+    // UCs existentes
     private ProdutosDisponiveisUC produtosDisponiveisUC;
-    private TodosProdutosStatusUC todosProdutosStatusUC; // Added
+    private TodosProdutosStatusUC todosProdutosStatusUC;
     private CriaOrcamentoUC criaOrcamentoUC;
     private EfetivaOrcamentoUC efetivaOrcamentoUC;
     private UltimosOrcamentosEfetivadosUC ultimosOrcamentosEfetivadosUC;
@@ -31,12 +32,18 @@ public class Controller {
     private AdicionarProdutoUC adicionarProdutoUC;
     private EditarProdutoUC editarProdutoUC;
     private RemoverOrcamentoUC removerOrcamentoUC;
-    private DesativarProdutoUC desativarProdutoUC; // Changed from RemoverProdutoUC
+    private DesativarProdutoUC desativarProdutoUC;
+
+    // Novos UCs
+    private BaixaEstoqueUC baixaEstoqueUC;
+    private EntradaEstoqueUC entradaEstoqueUC;
+    private ProdutoPorCodigoUC produtoPorCodigoUC;
+    private QtdadeEmEstoqueUC qtdadeEmEstoqueUC;
 
     @Autowired
     public Controller(
             ProdutosDisponiveisUC produtosDisponiveisUC,
-            TodosProdutosStatusUC todosProdutosStatusUC, // Added
+            TodosProdutosStatusUC todosProdutosStatusUC,
             CriaOrcamentoUC criaOrcamentoUC,
             EfetivaOrcamentoUC efetivaOrcamentoUC,
             UltimosOrcamentosEfetivadosUC ultimosOrcamentosEfetivadosUC,
@@ -44,10 +51,15 @@ public class Controller {
             AdicionarProdutoUC adicionarProdutoUC,
             EditarProdutoUC editarProdutoUC,
             RemoverOrcamentoUC removerOrcamentoUC,
-            DesativarProdutoUC desativarProdutoUC // Changed
+            DesativarProdutoUC desativarProdutoUC,
+            // Injeta os novos UCs
+            BaixaEstoqueUC baixaEstoqueUC,
+            EntradaEstoqueUC entradaEstoqueUC,
+            ProdutoPorCodigoUC produtoPorCodigoUC,
+            QtdadeEmEstoqueUC qtdadeEmEstoqueUC
             ) {
         this.produtosDisponiveisUC = produtosDisponiveisUC;
-        this.todosProdutosStatusUC = todosProdutosStatusUC; // Added
+        this.todosProdutosStatusUC = todosProdutosStatusUC;
         this.criaOrcamentoUC = criaOrcamentoUC;
         this.efetivaOrcamentoUC = efetivaOrcamentoUC;
         this.ultimosOrcamentosEfetivadosUC = ultimosOrcamentosEfetivadosUC;
@@ -55,18 +67,24 @@ public class Controller {
         this.adicionarProdutoUC = adicionarProdutoUC;
         this.editarProdutoUC = editarProdutoUC;
         this.removerOrcamentoUC = removerOrcamentoUC;
-        this.desativarProdutoUC = desativarProdutoUC; // Changed
+        this.desativarProdutoUC = desativarProdutoUC;
+        // Atribui os novos UCs
+        this.baixaEstoqueUC = baixaEstoqueUC;
+        this.entradaEstoqueUC = entradaEstoqueUC;
+        this.produtoPorCodigoUC = produtoPorCodigoUC;
+        this.qtdadeEmEstoqueUC = qtdadeEmEstoqueUC;
     }
 
     @GetMapping("")
     @CrossOrigin(origins = "*")
     public ResponseEntity<Void> welcomeMessage() {
         return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create("/welcome.html")) // Changed to welcome.html as per files
+                .location(URI.create("/welcome.html"))
                 .build();
     }
 
-    // --- Endpoints de Orçamento ---
+    // --- Endpoints de Orçamento (Mantidos) ---
+    // ... (Mantenha os endpoints existentes de orçamento) ...
     @GetMapping("/todosOrcamentos")
     @CrossOrigin(origins = "*")
     public List<OrcamentoDTO> todosOrcamentos() {
@@ -75,19 +93,18 @@ public class Controller {
 
     @PostMapping("/novoOrcamento")
     @CrossOrigin(origins = "*")
-    // Changed to use NovoOrcamentoRequestDTO
     public OrcamentoDTO novoOrcamento(@RequestBody NovoOrcamentoRequestDTO request) { 
         try {
-            return criaOrcamentoUC.run(request); // Pass the whole request DTO
+            return criaOrcamentoUC.run(request);
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-        } catch (RuntimeException e) { // Catch specific runtime from UC like "Produto não encontrado"
+        } catch (RuntimeException e) {
              System.err.println("Controller Erro: /novoOrcamento -> " + e.getMessage());
              throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
         }
          catch (Exception e) {
             System.err.println("Controller Erro: /novoOrcamento -> " + e.getMessage());
-            e.printStackTrace(); // Good for debugging server-side
+            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao criar orçamento.", e);
         }
     }
@@ -97,13 +114,11 @@ public class Controller {
     public OrcamentoDTO efetivaOrcamento(@PathVariable(value = "id") long idOrcamento) {
         try {
             OrcamentoDTO orcamento = efetivaOrcamentoUC.run(idOrcamento);
-            if (orcamento == null) { // Should mean "not found"
+            if (orcamento == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Orçamento ID " + idOrcamento + " não encontrado.");
             }
-            // If orcamento.isEfetivado() is false after the call, it means stock was insufficient
-            // The client can check this flag. HTTP 200 is okay, body contains outcome.
             return orcamento;
-        } catch (IllegalStateException e) { // e.g. orçamento sem itens
+        } catch (IllegalStateException e) {
              throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
          catch (Exception e) {
@@ -136,23 +151,34 @@ public class Controller {
         }
     }
 
-    // --- Endpoints de Produto ---
-    @GetMapping("/produtosDisponiveis") // This lists products for adding to budget (listado and stock > 0)
+    // --- Endpoints de Produto (Mantidos e Novos) ---
+    @GetMapping("/produtosDisponiveis")
     @CrossOrigin(origins = "*")
-    public List<ProdutoDTO> produtosDisponiveis() { // Returns basic ProdutoDTO
+    public List<ProdutoDTO> produtosDisponiveis() {
         return produtosDisponiveisUC.run();
     }
 
-    @GetMapping("/todosProdutosStatus") // New endpoint for product management UI
+    @GetMapping("/todosProdutosStatus")
     @CrossOrigin(origins = "*")
-    public List<ProdutoEstoqueDTO> todosProdutosStatus() { // Returns enhanced ProdutoEstoqueDTO
+    public List<ProdutoEstoqueDTO> todosProdutosStatus() {
         return todosProdutosStatusUC.run();
+    }
+
+    // NOVO Endpoint: Buscar produto por código
+    @GetMapping("/produtos/{id}")
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<ProdutoDTO> getProdutoPorCodigo(@PathVariable long id) {
+        ProdutoDTO produto = produtoPorCodigoUC.run(id);
+        if (produto != null) {
+            return ResponseEntity.ok(produto);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/produtos")
     @CrossOrigin(origins = "*")
     public ResponseEntity<ProdutoDTO> adicionarProduto(@RequestBody NovoProdutoRequestDTO novoProdutoDTO) {
-        // Returns basic ProdutoDTO
         try {
             ProdutoDTO produtoAdicionado = adicionarProdutoUC.run(novoProdutoDTO);
             return ResponseEntity.created(URI.create("/produtos/" + produtoAdicionado.getId()))
@@ -168,7 +194,6 @@ public class Controller {
     @PutMapping("/produtos/{id}")
     @CrossOrigin(origins = "*")
     public ResponseEntity<ProdutoDTO> editarProduto(@PathVariable long id, @RequestBody ProdutoDTO produtoDTO) {
-        // Returns basic ProdutoDTO
         try {
             ProdutoDTO produtoEditado = editarProdutoUC.run(id, produtoDTO);
             if (produtoEditado == null) { 
@@ -176,7 +201,6 @@ public class Controller {
             }
             return ResponseEntity.ok(produtoEditado);
         } catch (IllegalArgumentException e) { 
-             // Assuming service throws IllegalArgumentException for "not found" or bad data
             if (e.getMessage() != null && e.getMessage().contains("não encontrado")) {
                  throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
             }
@@ -187,23 +211,63 @@ public class Controller {
         }
     }
 
-    @DeleteMapping("/produtos/{id}") // This now de-lists the product
+    @DeleteMapping("/produtos/{id}")
     @CrossOrigin(origins = "*")
     public ResponseEntity<Void> desativarProduto(@PathVariable long id) {
         try {
-            boolean desativado = desativarProdutoUC.run(id); // Changed UC
+            boolean desativado = desativarProdutoUC.run(id);
             if (desativado) {
                 return ResponseEntity.noContent().build(); 
             } else {
-                 // Could be product not found, or already delisted by some logic.
-                 // Service should return false if product ID itself doesn't exist in produtosRepo for consistency.
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto ID " + id + " não encontrado ou falha ao desativar.");
             }
-        } catch (IllegalArgumentException e) { // Should not happen if ID is just long
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (Exception e) {
             System.err.println("Controller Erro: /produtos/" + id + " (DELETE) -> " + e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao desativar produto.", e);
+        }
+    }
+
+    // --- Endpoints de Estoque (Novos) ---
+
+    @GetMapping("/produtos/{id}/qtdadeEstoque")
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<Integer> getQtdadeEmEstoque(@PathVariable long id) {
+        try {
+            int qtd = qtdadeEmEstoqueUC.run(id);
+            return ResponseEntity.ok(qtd);
+        } catch (Exception e) {
+            System.err.println("Controller Erro: /produtos/" + id + "/qtdadeEstoque -> " + e.getMessage());
+            // Decide se retorna 404 se não achar ou 500 para outros erros.
+            // Por enquanto, vamos assumir 500 para simplicidade.
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao buscar quantidade em estoque.", e);
+        }
+    }
+
+    @PostMapping("/produtos/{id}/baixaEstoque")
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<Void> darBaixaEstoque(@PathVariable long id, @RequestParam int qtdade) {
+        try {
+            baixaEstoqueUC.run(id, qtdade);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (Exception e) {
+            System.err.println("Controller Erro: /produtos/" + id + "/baixaEstoque -> " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao dar baixa no estoque.", e);
+        }
+    }
+
+    @PostMapping("/produtos/{id}/entradaEstoque")
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<Void> darEntradaEstoque(@PathVariable long id, @RequestParam int qtdade) {
+        try {
+            entradaEstoqueUC.run(id, qtdade);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (Exception e) {
+            System.err.println("Controller Erro: /produtos/" + id + "/entradaEstoque -> " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao dar entrada no estoque.", e);
         }
     }
 }

@@ -39,8 +39,7 @@ public class ServicoDeEstoque {
                 .map(produto -> {
                     ItemDeEstoqueModel itemEstoque = estoqueRepo.findByProdutoId(produto.getId());
                     if (itemEstoque == null) {
-                        // Se não houver item de estoque, cria um 'dummy' não listado
-                        ItemDeEstoqueModel dummyItem = new ItemDeEstoqueModel(0, produto, 0, 0, 0);
+                        ItemDeEstoqueModel dummyItem = new ItemDeEstoqueModel(produto, 0, 0, 0);
                         dummyItem.setListado(false);
                         return ProdutoEstoqueDTO.fromModels(produto, dummyItem);
                     }
@@ -71,20 +70,37 @@ public class ServicoDeEstoque {
         estoqueRepo.save(item);
     }
 
+    // ==========================================================
+    // == GARANTA QUE ESTE MÉTODO ESTEJA PRESENTE E CORRETO ==
+    // ==========================================================
+    @Transactional
+    public void entradaEstoque(long idProduto, int qtdade) {
+        ItemDeEstoqueModel item = estoqueRepo.findByProdutoId(idProduto);
+        if (item == null) {
+            throw new IllegalArgumentException("Produto com ID " + idProduto + " não encontrado no estoque para dar entrada.");
+        }
+         if (qtdade <= 0) {
+            throw new IllegalArgumentException("A quantidade de entrada deve ser positiva.");
+        }
+        item.setQuantidade(item.getQuantidade() + qtdade);
+        // Garante que o item fique listado ao dar entrada (opcional, mas faz sentido)
+        item.setListado(true); 
+        estoqueRepo.save(item);
+    }
+    // ==========================================================
+
     @Transactional
     public ProdutoModel adicionarNovoProduto(NovoProdutoRequestDTO novoProdutoInfo) {
-        // Validação básica
         if (novoProdutoInfo == null || novoProdutoInfo.getDescricao() == null || novoProdutoInfo.getDescricao().isEmpty() || novoProdutoInfo.getPrecoUnitario() <= 0) {
              throw new IllegalArgumentException("Dados inválidos para novo produto.");
         }
         
-        ProdutoModel novoProduto = new ProdutoModel(0, // ID será gerado pelo BD
+        ProdutoModel novoProduto = new ProdutoModel(
                 novoProdutoInfo.getDescricao(),
                 novoProdutoInfo.getPrecoUnitario());
         ProdutoModel produtoCadastrado = produtosRepo.save(novoProduto);
 
         ItemDeEstoqueModel novoItemEstoque = new ItemDeEstoqueModel(
-                0, // ID será gerado pelo BD
                 produtoCadastrado,
                 novoProdutoInfo.getQuantidadeInicialEstoque(),
                 novoProdutoInfo.getEstoqueMin(),

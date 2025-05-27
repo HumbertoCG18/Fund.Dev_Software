@@ -1,6 +1,8 @@
 package com.bcopstein.sistvendas.dominio.modelos;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -10,6 +12,7 @@ import jakarta.persistence.Table;
 @Table(name = "item_de_estoque")
 public class ItemDeEstoqueModel {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @OneToOne
@@ -24,6 +27,16 @@ public class ItemDeEstoqueModel {
     // Construtor padrão para JPA
     protected ItemDeEstoqueModel() {}
 
+    // Construtor para novos itens (sem ID) - ADICIONADO/GARANTIDO
+    public ItemDeEstoqueModel(ProdutoModel produto, int quantidade, int estoqueMin, int estoqueMax) {
+        this.produto = produto;
+        this.quantidade = quantidade;
+        this.estoqueMin = estoqueMin;
+        this.estoqueMax = estoqueMax;
+        this.listado = true;
+    }
+    
+    // Construtor com ID (mantido para flexibilidade/data.sql)
     public ItemDeEstoqueModel(long id, ProdutoModel produto, int quantidade, int estoqueMin, int estoqueMax) {
         this.id = id;
         this.produto = produto;

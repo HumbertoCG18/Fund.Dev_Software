@@ -1,6 +1,8 @@
 package com.bcopstein.sistvendas.dominio.modelos;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -8,6 +10,7 @@ import jakarta.persistence.Table;
 @Table(name = "produto")
 public class ProdutoModel {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String descricao;
     private double precoUnitario;
@@ -15,12 +18,20 @@ public class ProdutoModel {
     // Construtor padrão para JPA
     protected ProdutoModel() {}
 
+    // Construtor para novos produtos (sem ID) - ADICIONADO/GARANTIDO
+    public ProdutoModel(String descricao, double precoUnitario) {
+        this.descricao = descricao;
+        this.precoUnitario = precoUnitario;
+    }
+
+    // Construtor com ID (mantido para flexibilidade/data.sql)
     public ProdutoModel(long id, String descricao, double precoUnitario) {
         this.id = id;
         this.descricao = descricao;
         this.precoUnitario = precoUnitario;
     }
 
+    // Getters e Setters
     public long getId() {
         return this.id;
     }
