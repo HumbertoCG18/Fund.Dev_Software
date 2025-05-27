@@ -361,7 +361,7 @@
                 document.getElementById('produtosGerenciamentoResult').style.display = 'none';
                 document.getElementById('produtosGerenciamentoResult').innerHTML = '';
 
-                exibirResultadoOperacao('produtosGerenciamentoResult', 'Carregando produtos para gerenciamento...', 'Carregando');
+                // exibirResultadoOperacao('produtosGerenciamentoResult', 'Carregando produtos para gerenciamento...', 'Carregando');
                 const response = await fetch('/todosProdutosStatus'); 
                 produtosCarregadosParaGerenciamento = await handleFetchError(response);
                 renderizarProdutosComoCards(); 
