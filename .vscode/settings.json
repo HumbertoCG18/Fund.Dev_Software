@@ -4,5 +4,6 @@
         "March/19"
     ],
     "java.project.referencedLibraries": [],
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "maven.view": "hierarchical"
 }
